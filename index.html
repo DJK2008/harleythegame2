@@ -63,7 +63,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: flex-start; /* Start bovenaan voor scrollbaarheid */
+            justify-content: flex-start; 
             color: white; 
             z-index: 100;
             overflow-y: auto; 
@@ -153,10 +153,10 @@
         /* Intro Afbeelding Schaling */
         .intro-image {
             max-width: 400px;
-            width: 50%;
-            max-height: 30dvh;
+            width: 45%;
+            max-height: 25dvh;
             height: auto;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             filter: drop-shadow(0 0 15px rgba(255, 255, 0, 0.4));
             object-fit: contain;
             flex-shrink: 1;
@@ -205,16 +205,16 @@
 
         #boss-summary-container { 
             display: flex; 
-            gap: 15px; 
-            margin: 15px 0; 
+            gap: 10px; 
+            margin: 10px 0; 
             flex-wrap: wrap; 
             justify-content: center;
             width: 100%;
         }
         
         .boss-summary-img {
-            max-width: 90%;
-            max-height: 45dvh;
+            max-width: 80%;
+            max-height: 35dvh;
             object-fit: contain;
             border: 5px solid var(--action-yellow);
             border-radius: 15px;
@@ -235,7 +235,7 @@
         }
 
         .prominent-score {
-            font-size: clamp(40px, 15vh, 100px);
+            font-size: clamp(40px, 12vh, 100px);
             color: var(--action-yellow);
             text-shadow: 4px 4px 0 #000;
             margin: 5px 0;
@@ -246,11 +246,12 @@
 
         /* Media Query voor zeer smalle landschapsmodus */
         @media screen and (max-height: 480px) {
-            #start-screen h1 { font-size: 24px; margin: 5px 0; }
-            #start-screen p { font-size: 14px; margin: 0 0 10px 0; }
-            .intro-image { max-height: 25dvh; }
-            .menu-btn { padding: 10px 0; font-size: 18px; width: 280px; margin-top: 5px; }
-            .prominent-score { font-size: 60px; }
+            .full-overlay { padding: 10px; }
+            #start-screen h1 { font-size: 20px; margin: 2px 0; }
+            #start-screen p { font-size: 12px; margin: 0 0 5px 0; }
+            .intro-image { max-height: 20dvh; }
+            .menu-btn { padding: 8px 0; font-size: 16px; width: 260px; margin-top: 5px; }
+            .prominent-score { font-size: 40px; }
         }
     </style>
 </head>
@@ -368,7 +369,7 @@
 
 <script>
     // --- 1. CONFIGURATIE & GLOBALE STATE ---
-    const BACKGROUND_URL = 'https://i.ibb.co/4nC5LYhq/bg1.png';
+    const BACKGROUND_URL = 'assets/bg2.jpg'; // Gewijzigd naar bg2.jpg
     const LEVEL_START_AUDIO_URL = 'audio/music.mp3';
     const LEVEL_WIN_AUDIO_URL = 'audio/forza eagles.wav';
     const LEVEL_GAMEOVER_AUDIO_URL = 'audio/always look.wav'; 
@@ -449,51 +450,29 @@
         const keysList = Object.keys(assets);
         const total = keysList.length;
         let loadedCount = 0;
-
         const promises = keysList.map(key => {
             return new Promise((resolve) => {
                 const item = assets[key];
                 const img = new Image();
                 img.crossOrigin = "anonymous";
-                
                 const timeout = setTimeout(() => {
-                    item.loaded = false;
-                    loadedCount++;
-                    addFailedAsset(item.label);
-                    updateLoadingBar(loadedCount, total);
-                    resolve();
+                    item.loaded = false; loadedCount++; addFailedAsset(item.label); updateLoadingBar(loadedCount, total); resolve();
                 }, 3000);
-
                 img.onload = () => {
-                    clearTimeout(timeout);
-                    item.canvas.width = img.width;
-                    item.canvas.height = img.height;
-                    const aCtx = item.canvas.getContext('2d');
-                    aCtx.drawImage(img, 0, 0);
-                    item.loaded = true;
-                    loadedCount++;
-                    updateLoadingBar(loadedCount, total);
-                    resolve();
+                    clearTimeout(timeout); item.canvas.width = img.width; item.canvas.height = img.height;
+                    const aCtx = item.canvas.getContext('2d'); aCtx.drawImage(img, 0, 0);
+                    item.loaded = true; loadedCount++; updateLoadingBar(loadedCount, total); resolve();
                 };
                 img.onerror = () => {
-                    clearTimeout(timeout);
-                    item.loaded = false;
-                    loadedCount++;
-                    addFailedAsset(item.label);
-                    updateLoadingBar(loadedCount, total);
-                    resolve();
+                    clearTimeout(timeout); item.loaded = false; loadedCount++; addFailedAsset(item.label); updateLoadingBar(loadedCount, total); resolve();
                 };
                 img.src = item.src;
             });
         });
-
         await Promise.all(promises);
-        
         if (assets.background.loaded) bgImg.src = assets.background.src;
-        const lt = document.getElementById('loading-text');
-        if (lt) lt.style.display = 'none';
-        const sb = document.getElementById('start-btn');
-        if (sb) sb.disabled = false;
+        document.getElementById('loading-text').style.display = 'none';
+        document.getElementById('start-btn').disabled = false;
     }
 
     function checkIOS() {
@@ -506,25 +485,18 @@
         const container = document.getElementById('failed-assets-container');
         if (container) {
             if (container.innerHTML === "") container.innerHTML = "<strong>Laden mislukt:</strong>";
-            const div = document.createElement('div');
-            div.innerText = "✖ " + label;
-            container.appendChild(div);
+            const div = document.createElement('div'); div.innerText = "✖ " + label; container.appendChild(div);
         }
     }
 
     function updateLoadingBar(current, total) {
         const pct = Math.floor((current / total) * 100);
-        const lt = document.getElementById('loading-text');
-        if (lt) lt.innerText = `Laden... ${pct}%`;
+        document.getElementById('loading-text').innerText = `Laden... ${pct}%`;
     }
 
     function triggerHealVisual() {
         const hb = document.getElementById('health-container');
-        if (hb) {
-            hb.classList.remove('heal-animate');
-            void hb.offsetWidth; 
-            hb.classList.add('heal-animate');
-        }
+        if (hb) { hb.classList.remove('heal-animate'); void hb.offsetWidth; hb.classList.add('heal-animate'); }
     }
 
     function spawnBoss() {
@@ -532,47 +504,28 @@
         const screenRight = (canvas.width / gameScale);
         const cfg = levelBossConfig[currentLevel] || ['boss1'];
         activeBosses = cfg.map((t, i) => ({
-            type: t,
-            x: screenRight + 100 + (i*350), 
-            y: 680, 
-            width: 250, height: 350,
+            type: t, x: screenRight + 100 + (i*350), y: 680, width: 250, height: 350,
             hp: (25 + currentLevel*5) / (cfg.length*0.8), maxHp: (25 + currentLevel*5) / (cfg.length*0.8),
-            speed: 2.5, 
-            currentVx: -2.5,
-            vxTimer: 0,
-            isHit: false, hitFlash: 0,
-            throwTimer: 45 + (i*15),
-            throwVisualTimer: 0, 
-            eatVisualTimer: 0,
-            throwFlip: false,
-            moveFlip: false,
-            moveFlipTimer: 0
+            speed: 2.5, currentVx: -2.5, vxTimer: 0, isHit: false, hitFlash: 0, throwTimer: 45 + (i*15),
+            throwVisualTimer: 0, eatVisualTimer: 0, throwFlip: false, moveFlip: false, moveFlipTimer: 0
         }));
-        const bhc = document.getElementById('boss-health-container');
-        if(bhc) bhc.style.display = 'block';
+        document.getElementById('boss-health-container').style.display = 'block';
         updateBossUI();
     }
 
     function showLevelUp() {
-        gameActive = false;
-        levelAudio.pause();
-        levelAudio.currentTime = 0;
+        gameActive = false; levelAudio.pause(); levelAudio.currentTime = 0;
         winAudio.play().catch(() => {});
-
         const cfg = levelBossConfig[currentLevel];
-        const summaryText = cfg.map(c => assets[c].name).join(" en ") + " verslagen.";
-        const luText = document.getElementById('level-up-text');
-        if(luText) luText.innerText = summaryText;
+        document.getElementById('level-up-text').innerText = cfg.map(c => assets[c].name).join(" en ") + " verslagen.";
         const container = document.getElementById('boss-summary-container');
-        if (container) {
-            container.innerHTML = '';
-            cfg.forEach(c => {
-                const img = document.createElement('img');
-                img.src = assets[bossDownMap[c]]?.src || assets[c].src;
-                img.className = 'boss-summary-img';
-                container.appendChild(img);
-            });
-        }
+        container.innerHTML = '';
+        cfg.forEach(c => {
+            const img = document.createElement('img');
+            img.src = assets[bossDownMap[c]]?.src || assets[c].src;
+            img.className = 'boss-summary-img';
+            container.appendChild(img);
+        });
         document.getElementById('level-up-screen').style.display = 'flex';
     }
 
@@ -608,13 +561,7 @@
     function createSplat(x, y, radius, type) {
         const particles = type === 'BOMB' ? 40 : 15;
         for (let i = 0; i < particles; i++) {
-            splats.push({
-                x: x, y: y,
-                vx: (Math.random() - 0.5) * 12,
-                vy: -Math.random() * 8 - 2,
-                radius: Math.random() * (radius/3) + 2,
-                life: 1.0, decay: 0.025
-            });
+            splats.push({ x: x, y: y, vx: (Math.random() - 0.5) * 12, vy: -Math.random() * 8 - 2, radius: Math.random() * (radius/3) + 2, life: 1.0, decay: 0.025 });
         }
     }
 
@@ -624,7 +571,7 @@
         if(type === 'DIARREE') {
             for(let i=0; i<4; i++) setTimeout(() => poops.push({ x: px, y: py, radius: 8, speedY: 18, speedX: (i-1.5)*4, type:'NORMAL' }), i * 60);
         } else if(type === 'POEPBOM') {
-            poops.push({ x: px, y: py, radius: 45, speedY: 9, speedX: 0, type:'BOMB' });
+            poops.push({ x: px, y: py, radius: 30, speedY: 9, speedX: 0, type:'BOMB' });
         } else {
             poops.push({ x: px, y: py, radius: 12, speedY: 15, speedX: 0, type:'NORMAL' });
         }
@@ -647,12 +594,10 @@
         document.getElementById('boss-health-container').style.display = 'none';
         document.getElementById('game-over-screen').style.display = 'none';
         document.getElementById('level-up-screen').style.display = 'none';
-        
         ['DIARREE', 'POEPBOM'].forEach(k => {
             const btn = weaponButtons[k];
             if(btn) { btn.classList.remove('active'); btn.querySelector('.timer-overlay').style.height = '0%'; }
         });
-        
         winAudio.pause(); winAudio.currentTime = 0;
         gameOverAudio.pause(); gameOverAudio.currentTime = 0;
         if (levelAudio.paused) levelAudio.play().catch(() => {});
@@ -662,7 +607,6 @@
         if(!gameActive) return;
         if(player.hitFlash > 0) player.hitFlash--;
         activeBosses.forEach(b => { if (b.hitFlash > 0) b.hitFlash--; });
-
         if(player.isDead) {
             player.fallSpeed += 0.5; player.y += player.fallSpeed;
             if(player.y > VIRTUAL_HEIGHT) { 
@@ -673,38 +617,28 @@
             }
             return;
         }
-
         if(!joystickActive) {
             if(keys['KeyW'] || keys['ArrowUp']) player.dy = -player.speed; else if(keys['KeyS'] || keys['ArrowDown']) player.dy = player.speed; else player.dy = 0;
             if(keys['KeyA'] || keys['ArrowLeft']) { player.dx = -player.speed; player.facing = -1; } else if(keys['KeyD'] || keys['ArrowRight']) { player.dx = player.speed; player.facing = 1; } else player.dx = 0;
             if(keys['Space'] && player.shootCooldown <= 0) { executePoop('NORMAL'); player.shootCooldown = 15; }
         }
         if(player.shootCooldown > 0) player.shootCooldown--;
-
         let worldSpeedFactor = (player.dx < 0) ? 0.3 : 1.0;
         const allBossesDefeated = activeBosses.length > 0 && activeBosses.every(b => b.isHit);
         let currentEffectiveWorldSpeed = (bossActive && !allBossesDefeated) ? 0 : BASE_WORLD_SPEED * worldSpeedFactor;
-
         worldStep += currentEffectiveWorldSpeed;
         player.x = Math.max(-50, Math.min((canvas.width/gameScale) - 100, player.x + player.dx));
         player.y = Math.max(-20, Math.min(VIRTUAL_HEIGHT / 1.8, player.y + player.dy));
-
         document.getElementById('score-text').innerText = score;
         document.getElementById('level-text').innerText = currentLevel;
-        
         const sec = dt / 1000;
         Object.keys(player.activeWeapons).forEach(k => {
             if(player.activeWeapons[k] > 0) {
                 player.activeWeapons[k] -= sec;
                 let btn = weaponButtons[k];
-                if(btn) {
-                    btn.classList.add('active');
-                    btn.querySelector('.timer-overlay').style.height = (player.activeWeapons[k] / 8 * 100) + '%';
-                    if(player.activeWeapons[k] <= 0) btn.classList.remove('active');
-                }
+                if(btn) { btn.classList.add('active'); btn.querySelector('.timer-overlay').style.height = (player.activeWeapons[k] / 8 * 100) + '%'; if(player.activeWeapons[k] <= 0) btn.classList.remove('active'); }
             }
         });
-
         if(Math.random() < 0.012 && powerUps.length < 5) {
             let isBossPhase = bossActive && !allBossesDefeated;
             let snackRoll = Math.random();
@@ -712,11 +646,10 @@
             if (isBossPhase) powerUps.push({ x: Math.random() * ((canvas.width / gameScale) - 200) + 100, y: 100 + Math.random() * 500, type: selectedSnack, speed: 0, lifespan: 450 });
             else powerUps.push({ x: (canvas.width / gameScale) + 50, y: 100 + Math.random() * 500, type: selectedSnack, speed: 5 });
         }
-
         for(let i=powerUps.length-1; i>=0; i--) {
             const p = powerUps[i]; p.x -= (p.speed + currentEffectiveWorldSpeed);
             if (p.lifespan !== undefined) { p.lifespan--; if (p.lifespan <= 0) { powerUps.splice(i, 1); continue; } }
-            if(Math.sqrt((p.x-(player.x+120))**2 + (p.y-(player.y+50))**2) < 90) {
+            if(Math.sqrt((p.x-(player.x + 120))**2 + (p.y-(player.y+50))**2) < 90) {
                 if (p.type.type === 'WEAPON') player.activeWeapons[p.type.weapon] = 8;
                 else if (p.type.type === 'HEAL_SMALL') { player.hp = Math.min(100, player.hp + 20); triggerHealVisual(); }
                 else if (p.type.type === 'HEAL_FULL') { player.hp = 100; triggerHealVisual(); }
@@ -724,7 +657,6 @@
                 powerUps.splice(i,1);
             } else if(p.x < -100) powerUps.splice(i,1);
         }
-
         for(let i=beerGlasses.length-1; i>=0; i--) {
             const bg = beerGlasses[i]; bg.x += bg.vx; bg.y += bg.vy; bg.vy += 0.45; bg.x -= currentEffectiveWorldSpeed;
             if(bg.y > VIRTUAL_HEIGHT) { beerGlasses.splice(i,1); continue; }
@@ -734,7 +666,6 @@
                 if(player.hp <= 0) player.isDead = true;
             }
         }
-
         for(let i=poops.length-1; i>=0; i--) {
             const p = poops[i]; p.y += p.speedY; p.x += p.speedX;
             if(p.y > VIRTUAL_HEIGHT - 65) {
@@ -749,45 +680,33 @@
             for(let t of targets) if(!t.isHit && p.x > t.x && p.x < t.x+130 && p.y > VIRTUAL_HEIGHT-250) { t.isHit = true; t.hitTime = Date.now(); score += 100; hit = true; break; }
             if(!hit) {
                 for(let b of activeBosses) {
-                    if(!b.isHit && p.x > b.x && p.x < b.x+b.width && p.y > b.y && p.y < b.y+b.height) { 
-                        b.hp -= 1; b.hitFlash = 15; updateBossUI(); hit = true; 
-                        if(b.hp <= 0) { b.isHit = true; score += 1000; if(activeBosses.every(x=>x.isHit)) setTimeout(showLevelUp, 1500); } break; 
-                    }
+                    if(!b.isHit && p.x > b.x && p.x < b.x+b.width && p.y > b.y && p.y < b.y+b.height) { b.hp -= 1; b.hitFlash = 15; updateBossUI(); hit = true; if(b.hp <= 0) { b.isHit = true; score += 1000; if(activeBosses.every(x=>x.isHit)) setTimeout(showLevelUp, 1500); } break; }
                 }
             }
             if(hit) poops.splice(i, 1);
         }
-
         if(!bossActive && targets.length < 5 && Math.random() < 0.04) targets.push({ x: (canvas.width/gameScale) + 100, y: VIRTUAL_HEIGHT-200, speed: (1.5 + Math.random()*2), dir: -1, isHit: false, type: Math.random()<0.3?'hooligan':'normal', variant: Math.random()<0.5?1:2, hitTime: 0, throwTimer: 0 });
         for(let i=targets.length-1; i>=0; i--) {
-            const t = targets[i];
-            let targetSpeed = (t.type === 'hooligan' && t.throwTimer > 70) ? 0 : t.speed;
-            t.x -= (targetSpeed + currentEffectiveWorldSpeed);
+            const t = targets[i]; let targetSpeed = (t.type === 'hooligan' && t.throwTimer > 70) ? 0 : t.speed; t.x -= (targetSpeed + currentEffectiveWorldSpeed);
             if(t.type === 'hooligan' && !t.isHit) {
                 if(t.throwTimer > 0) t.throwTimer--;
                 if(t.throwTimer <= 0 && Math.random() < 0.015) { t.throwTimer = 100; beerGlasses.push({ x: t.x+50, y: VIRTUAL_HEIGHT-150, vx: (player.x - t.x) * 0.018, vy: -22 - (Math.random() * 5), type: 'STONE' }); }
             }
             if(t.isHit && Date.now() - t.hitTime > 3000) targets.splice(i,1); else if(t.x < -400) targets.splice(i,1);
         }
-
         activeBosses.forEach((b) => {
-            b.x -= currentEffectiveWorldSpeed; 
-            if(!b.isHit) {
-                if(b.throwVisualTimer > 0) b.throwVisualTimer--;
-                if(b.eatVisualTimer > 0) b.eatVisualTimer--;
+            b.x -= currentEffectiveWorldSpeed; if(!b.isHit) {
+                if(b.throwVisualTimer > 0) b.throwVisualTimer--; if(b.eatVisualTimer > 0) b.eatVisualTimer--;
                 b.vxTimer--; if (b.vxTimer <= 0) { b.currentVx = (Math.random() - 0.5) * 2 * b.speed; b.vxTimer = 40 + Math.random() * 80; }
-                b.x += b.currentVx;
-                if (b.x < 50) { b.x = 50; b.currentVx *= -1; } if (b.x > (canvas.width/gameScale)-300) { b.x = (canvas.width/gameScale)-300; b.currentVx *= -1; }
+                b.x += b.currentVx; if (b.x < 50) { b.x = 50; b.currentVx *= -1; } if (b.x > (canvas.width/gameScale)-300) { b.x = (canvas.width/gameScale)-300; b.currentVx *= -1; }
                 if(b.throwTimer > 0) b.throwTimer--;
                 if(b.throwTimer <= 0) { 
-                    b.throwTimer = 110; 
-                    if(b.type === 'boss4' && Math.random() < 0.3) b.eatVisualTimer = 45; else b.throwVisualTimer = 35;
+                    b.throwTimer = 110; if(b.type === 'boss4' && Math.random() < 0.3) b.eatVisualTimer = 45; else b.throwVisualTimer = 35;
                     let pt = b.type === 'boss2' ? 'GLOVE' : (b.type === 'boss3' ? 'BALL' : (b.type === 'boss4' ? 'HAMBURGER' : 'STONE'));
                     if (!b.eatVisualTimer || b.eatVisualTimer <= 0) beerGlasses.push({ x: b.x+100, y: b.y + 100, vx: (player.x - b.x) * 0.02, vy: -25 - (Math.random() * 5), type: pt }); 
                 }
             }
         });
-
         for(let i=splats.length-1; i>=0; i--) { const s = splats[i]; s.x -= currentEffectiveWorldSpeed; s.y += s.vy; s.vy += 0.5; if(s.y > VIRTUAL_HEIGHT-50) { s.y = VIRTUAL_HEIGHT-50; s.vy = 0; } s.life -= s.decay; if(s.life <= 0) splats.splice(i,1); }
         if(!bossActive && (score - levelScoreStart) >= POINTS_TO_BOSS) spawnBoss();
     }
@@ -795,45 +714,37 @@
     function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.scale(gameScale, gameScale);
-
         if(assets.background.loaded) {
             const dw = VIRTUAL_HEIGHT * (assets.background.canvas.width / assets.background.canvas.height);
             const sx = (worldStep * 0.5) % dw;
-            ctx.drawImage(assets.background.canvas, -sx, 0, dw, VIRTUAL_HEIGHT);
-            ctx.drawImage(assets.background.canvas, dw - sx, 0, dw, VIRTUAL_HEIGHT);
+            ctx.drawImage(assets.background.canvas, -sx, 0, dw, VIRTUAL_HEIGHT); ctx.drawImage(assets.background.canvas, dw - sx, 0, dw, VIRTUAL_HEIGHT);
         }
-
         ctx.fillStyle = '#555'; ctx.fillRect(0, VIRTUAL_HEIGHT - 50, (canvas.width/gameScale), 50);
-
         for(let t of targets) {
             ctx.save(); ctx.translate(t.x + (t.type==='hooligan'?75:65), VIRTUAL_HEIGHT - 50); 
             let sk = t.isHit ? (t.type === 'hooligan' ? 'hooliHit' : (t.variant === 2 ? 'normalHit2' : 'normalHit')) : (t.type === 'hooligan' ? (t.throwTimer > 70 ? 'hooliThrow' : 'hooli') : (t.variant === 2 ? 'normal2' : 'normal'));
-            if(assets[sk].loaded) ctx.drawImage(assets[sk].canvas, -(t.type==='hooligan'?75:65), -(t.type==='hooligan'?200:195), (t.type==='hooligan'?150:130), (t.type==='hooligan'?200:195));
-            ctx.restore();
+            if(assets[sk].loaded) ctx.drawImage(assets[sk].canvas, -(t.type==='hooligan'?75:65), -(t.type==='hooligan'?200:195), (t.type==='hooligan'?150:130), (t.type==='hooligan'?200:195)); ctx.restore();
         }
-
         for(let b of activeBosses) {
             ctx.save(); ctx.translate(b.x + b.width/2, b.isHit ? VIRTUAL_HEIGHT - 50 : b.y + b.height/2); 
             let sk = b.isHit ? bossDownMap[b.type] : (b.throwVisualTimer > 0 ? b.type + 'Throw' : (b.eatVisualTimer > 0 ? 'boss4Eat' : b.type));
-            if(assets[sk].loaded) drawTinted(assets[sk].canvas, -b.width/2, -b.height/2, b.width, b.height, b.hitFlash);
-            ctx.restore();
+            if(assets[sk].loaded) drawTinted(assets[sk].canvas, -b.width/2, -b.height/2, b.width, b.height, b.hitFlash); ctx.restore();
         }
-
         for(let bg of beerGlasses) { ctx.font = '24px Arial'; ctx.textAlign = 'center'; ctx.fillText(bg.type === 'GLOVE' ? '🧤' : (bg.type === 'BALL' ? '⚽' : (bg.type === 'HAMBURGER' ? '🍔' : '🪨')), bg.x, bg.y); }
         for(let p of powerUps) { ctx.font = '40px Arial'; ctx.textAlign = 'center'; ctx.fillText(p.type.icon, p.x, p.y); }
         for(let s of splats) { ctx.fillStyle = `rgba(92, 64, 51, ${s.life})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, 7); ctx.fill(); }
         for(let p of poops) { ctx.font = `${p.radius * 2.5}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💩', p.x, p.y); }
-
         ctx.save(); const hover = player.isDead ? 0 : Math.sin(Date.now()*0.005)*15;
         ctx.translate(player.x + player.width/2, player.y + player.height/2 + hover);
         if(player.facing === -1) ctx.scale(-1, 1); if(player.isDead) ctx.rotate(Math.PI);
         if(assets.eagle.loaded) drawTinted(assets.eagle.canvas, -player.width/2, -player.height/2, player.width, player.height, player.hitFlash);
         ctx.restore(); ctx.restore();
-
         if(gameActive) animationFrameId = requestAnimationFrame(gameLoop);
     }
 
     function gameLoop(t) { if(!lastTime) lastTime = t; update(t - lastTime); lastTime = t; render(); }
+    
+    window.triggerSpecial = (type) => { if (player.activeWeapons[type] > 0) executePoop(type); };
 
     window.onkeydown = (e) => keys[e.code] = true; window.onkeyup = (e) => keys[e.code] = false;
     const moveJoystick = (input) => {
@@ -850,7 +761,11 @@
     window.onmouseup = window.ontouchend = () => { joystickActive = false; document.getElementById('joystick-knob').style.transform = 'translate(0,0)'; player.dx = 0; player.dy = 0; };
 
     const bind = (id, fn) => { let el = document.getElementById(id); if(el) el.onclick = el.ontouchstart = (e) => { e.preventDefault(); fn(); }; };
-    bind('start-btn', async () => { if(gameActive) return; [levelAudio, winAudio, gameOverAudio].forEach(a => { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); }); await requestLandscape(); score = 0; levelScoreStart = 0; currentLevel = 1; document.getElementById('start-screen').style.display='none'; resetGame(); animationFrameId = requestAnimationFrame(gameLoop); });
+    bind('start-btn', async () => { 
+        if(gameActive) return; 
+        [levelAudio, winAudio, gameOverAudio].forEach(a => { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); });
+        await requestLandscape(); score = 0; levelScoreStart = 0; currentLevel = 1; document.getElementById('start-screen').style.display='none'; resetGame(); animationFrameId = requestAnimationFrame(gameLoop); 
+    });
     bind('restart-btn', () => { score = 0; levelScoreStart = 0; currentLevel = 1; resetGame(); animationFrameId = requestAnimationFrame(gameLoop); });
     bind('continue-btn', () => { currentLevel++; levelScoreStart = score; resetGame(); animationFrameId = requestAnimationFrame(gameLoop); });
     bind('fire-btn', () => executePoop('NORMAL'));
@@ -859,7 +774,15 @@
     bind('info-btn', () => { document.getElementById('info-modal').style.display = 'flex'; });
     bind('close-info-btn', () => { document.getElementById('info-modal').style.display = 'none'; });
 
-    window.forceLevel = (n) => { currentLevel = n; score = (n-1)*POINTS_TO_BOSS; levelScoreStart = score; resetGame(); document.getElementById('start-screen').style.display='none'; animationFrameId = requestAnimationFrame(gameLoop); };
+    window.forceLevel = (n) => { 
+        currentLevel = n; 
+        levelScoreStart = (n - 1) * POINTS_TO_BOSS;
+        score = levelScoreStart + POINTS_TO_BOSS; 
+        resetGame(); 
+        document.getElementById('start-screen').style.display='none'; 
+        if (!gameActive) animationFrameId = requestAnimationFrame(gameLoop);
+    };
+
     window.onload = () => { preload(); checkIOS(); };
     window.addEventListener('resize', resize); resize();
 </script>
