@@ -230,6 +230,13 @@ canvas { display: block; image-rendering: pixelated; }
     max-width: 400px;
 }
 
+.high-score-line {
+    font-size: 20px;
+    color: var(--action-yellow);
+    margin: 10px 0 20px 0;
+}
+#high-score-value { font-weight: bold; }
+
 .prominent-score {
     font-size: clamp(40px, 12vh, 100px);
     color: var(--action-yellow);

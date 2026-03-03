@@ -10,6 +10,7 @@ const VIRTUAL_HEIGHT = 1080;
 const VIRTUAL_WIDTH = 1920;
 const POINTS_TO_BOSS = 2500;
 const BASE_WORLD_SPEED = 6;
+const HIGH_SCORE_KEY = 'harley_high_score';
 
 const IS_DEBUG = new URLSearchParams(window.location.search).has('debug');
 
@@ -360,6 +361,19 @@ function resetGame() {
     if (levelAudio.paused) levelAudio.play().catch(() => {});
 }
 
+function getHighScore() {
+    const s = localStorage.getItem(HIGH_SCORE_KEY);
+    return s !== null ? Math.max(0, parseInt(s, 10)) : 0;
+}
+function setHighScore(score) {
+    const current = getHighScore();
+    if (score > current) {
+        localStorage.setItem(HIGH_SCORE_KEY, String(score));
+        return score;
+    }
+    return current;
+}
+
 function update(dt) {
     if(!gameActive) return;
     if(player.hitFlash > 0) player.hitFlash--;
@@ -367,10 +381,21 @@ function update(dt) {
     if(player.isDead) {
         player.fallSpeed += 0.5; player.y += player.fallSpeed;
         if(player.y > VIRTUAL_HEIGHT) { 
-            gameActive = false; levelAudio.pause(); levelAudio.currentTime = 0;
+            gameActive = false; 
+            levelAudio.pause(); 
+            levelAudio.currentTime = 0;
             gameOverAudio.play().catch(() => {});
-            if (els.finalScore) els.finalScore.innerText = score; 
-            if (els.gameOverScreen) els.gameOverScreen.style.display = 'flex'; 
+
+            if (els.finalScore) els.finalScore.innerText = score;
+
+            const newHigh = setHighScore(score);
+            const highEl = document.getElementById('high-score-value');
+            if (highEl) highEl.innerText = newHigh;
+            // Optioneel: alleen de regel tonen als er ooit een score is opgeslagen
+            const lineEl = document.getElementById('high-score-line');
+            if (lineEl) lineEl.style.display = 'block';
+
+            if (els.gameOverScreen) els.gameOverScreen.style.display = 'flex';
         }
         return;
     }
