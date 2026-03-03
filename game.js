@@ -752,11 +752,20 @@ function render() {
     for(let p of powerUps) { ctx.font = '40px Arial'; ctx.textAlign = 'center'; ctx.fillText(p.type.icon, p.x, p.y); }
     for(let s of splats) { ctx.fillStyle = `rgba(92, 64, 51, ${s.life})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, 7); ctx.fill(); }
     for(let p of poops) { ctx.font = `${p.radius * 2.5}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💩', p.x, p.y); }
-    ctx.save(); const hover = player.isDead ? 0 : Math.sin(Date.now()*0.005)*15;
-    ctx.translate(player.x + player.width/2, player.y + player.height/2 + hover);
-    if(player.facing === -1) ctx.scale(-1, 1); if(player.isDead) ctx.rotate(Math.PI);
-    if(assets.eagle.loaded) drawTinted(assets.eagle.canvas, -player.width/2, -player.height/2, player.width, player.height, player.hitFlash);
-    ctx.restore(); ctx.restore();
+    ctx.save();
+    const t = Date.now() * 0.001;
+    const hoverY = player.isDead ? 0 : Math.sin(t * 0.8) * 8;
+    const hoverX = player.isDead ? 0 : Math.cos(t * 0.5) * 4;
+    ctx.translate(player.x + player.width / 2 + hoverX, player.y + player.height / 2 + hoverY);
+    const pulse = player.isDead ? 1 : 1 + 0.02 * Math.sin(t * 0.6);
+    ctx.scale(pulse, pulse);
+    const tilt = player.isDead ? 0 : Math.max(-0.12, Math.min(0.12, player.dx * 0.012 + player.dy * 0.008));
+    ctx.rotate(tilt);
+    if (player.facing === -1) ctx.scale(-1, 1);
+    if (player.isDead) ctx.rotate(Math.PI);
+    if (assets.eagle.loaded) drawTinted(assets.eagle.canvas, -player.width/2, -player.height/2, player.width, player.height, player.hitFlash);
+    ctx.restore();
+    ctx.restore();
     if(gameActive) animationFrameId = requestAnimationFrame(gameLoop);
 }
 
