@@ -50,7 +50,7 @@ const levelBossConfig = {
 
 const assets = {
     background: { src: BACKGROUND_URL, canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond' },
-    eagleIntro: { src: 'https://i.ibb.co/N2bCS02z/eagle-intro.png', canvas: document.createElement('canvas'), loaded: false, label: 'Intro Adelaar' },
+    eagleIntro: { src: 'assets/eagle-intro.png', canvas: document.createElement('canvas'), loaded: false, label: 'Intro Adelaar' },
     eagle: { src: 'assets/eagle.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar' },
     normal: { src: 'assets/pecsup1ren_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1' },
     normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
