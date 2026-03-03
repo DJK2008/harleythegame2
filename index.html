@@ -30,7 +30,7 @@
         <li>Scroll naar beneden en kies <strong>Zet op beginscherm</strong>.</li>
         <li>Start de game vanaf je beginscherm.</li>
     </ol>
-    <button class="menu-btn" onclick="document.getElementById('ios-modal').style.display='none'">IK DOE HET LATER</button>
+    <button id="ios-later-btn" class="menu-btn">IK DOE HET LATER</button>
 </div>
 
 <div id="game-container">
@@ -45,16 +45,16 @@
     </div>
 
     <div id="debug-panel">
-        <button class="debug-btn" onclick="forceLevel(1)">L1</button>
-        <button class="debug-btn" onclick="forceLevel(2)">L2</button>
-        <button class="debug-btn" onclick="forceLevel(3)">L3</button>
-        <button class="debug-btn" onclick="forceLevel(4)">L4</button>
-        <button class="debug-btn" onclick="forceLevel(5)">L5</button>
-        <button class="debug-btn" onclick="forceLevel(6)">L6</button>
-        <button class="debug-btn" onclick="forceLevel(7)">L7</button>
-        <button class="debug-btn" onclick="forceLevel(8)">L8</button>
-        <button class="debug-btn" onclick="forceLevel(9)">L9</button>
-        <button class="debug-btn" onclick="forceLevel(10)">L10</button>
+        <button class="debug-btn debug-level-btn" data-level="1">L1</button>
+        <button class="debug-btn debug-level-btn" data-level="2">L2</button>
+        <button class="debug-btn debug-level-btn" data-level="3">L3</button>
+        <button class="debug-btn debug-level-btn" data-level="4">L4</button>
+        <button class="debug-btn debug-level-btn" data-level="5">L5</button>
+        <button class="debug-btn debug-level-btn" data-level="6">L6</button>
+        <button class="debug-btn debug-level-btn" data-level="7">L7</button>
+        <button class="debug-btn debug-level-btn" data-level="8">L8</button>
+        <button class="debug-btn debug-level-btn" data-level="9">L9</button>
+        <button class="debug-btn debug-level-btn" data-level="10">L10</button>
     </div>
 
     <div id="health-container"><div id="health-bar"></div></div>
@@ -80,7 +80,7 @@
             Safari verbergt de balken alleen via 'Zet op beginscherm' (Deel-menu).</p>
             <p><strong>Belangrijk:</strong><br>
             Dit is een ludieke game. Als je niet tegen een grapje kunt, zoek dan een hobby waarbij je geen glimlach riskeert.</p>
-            <button class="menu-btn paypal-btn" onclick="window.open('https://www.paypal.com/ncp/payment/QJPXDDQ9U34N2', '_blank')">BIERTJE KOPEN</button>
+            <button class="menu-btn paypal-btn" data-open-url="https://www.paypal.com/ncp/payment/QJPXDDQ9U34N2">BIERTJE KOPEN</button>
             <p style="margin-top:20px; font-size:14px;">Contact:<br>
             <a href="mailto:harleysgame.domain936@passmail.net" style="color:var(--action-yellow)">harleysgame.domain936@passmail.net</a></p>
             <button id="close-info-btn" class="menu-btn" style="background:#555; margin-top:20px;">SLUITEN</button>
@@ -95,7 +95,7 @@
         
         <div id="donation-box">
             <p style="font-size: 14px; margin: 0;">Ondersteun de maker:</p>
-            <button class="menu-btn paypal-btn" onclick="window.open('https://www.paypal.com/ncp/payment/QJPXDDQ9U34N2', '_blank')">BIERTJE KOPEN</button>
+            <button class="menu-btn paypal-btn" data-open-url="https://www.paypal.com/ncp/payment/QJPXDDQ9U34N2">BIERTJE KOPEN</button>
         </div>
     </div>
 

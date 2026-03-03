@@ -1,12 +1,48 @@
-// --- 1. CONFIGURATIE & GLOBALE STATE ---
-const BACKGROUND_URL = 'assets/bg2.jpg'; 
+(() => {
+'use strict';
+
+// --- 1. CONFIGURATIE ---
+const BACKGROUND_URL = 'assets/bg2.jpg';
 const LEVEL_START_AUDIO_URL = 'audio/music.mp3';
 const LEVEL_WIN_AUDIO_URL = 'audio/forza eagles.wav';
-const LEVEL_GAMEOVER_AUDIO_URL = 'audio/always look.wav'; 
+const LEVEL_GAMEOVER_AUDIO_URL = 'audio/always look.wav';
 const VIRTUAL_HEIGHT = 1080;
-const VIRTUAL_WIDTH = 1920; 
+const VIRTUAL_WIDTH = 1920;
 const POINTS_TO_BOSS = 2500;
-const BASE_WORLD_SPEED = 6; 
+const BASE_WORLD_SPEED = 6;
+
+const IS_DEBUG = new URLSearchParams(window.location.search).has('debug');
+
+// Cache DOM elements (avoid repeated getElementById in hot paths)
+const els = {
+    bossHealthBar: document.getElementById('boss-health-bar'),
+    bossHealthContainer: document.getElementById('boss-health-container'),
+    bossSummaryContainer: document.getElementById('boss-summary-container'),
+    closeInfoBtn: document.getElementById('close-info-btn'),
+    debugPanel: document.getElementById('debug-panel'),
+    failedAssetsContainer: document.getElementById('failed-assets-container'),
+    finalScore: document.getElementById('final-score'),
+    fireBtn: document.getElementById('fire-btn'),
+    gameOverScreen: document.getElementById('game-over-screen'),
+    gameContainer: document.getElementById('game-container'),
+    healthBar: document.getElementById('health-bar'),
+    healthContainer: document.getElementById('health-container'),
+    infoBtn: document.getElementById('info-btn'),
+    infoModal: document.getElementById('info-modal'),
+    iosLaterBtn: document.getElementById('ios-later-btn'),
+    iosModal: document.getElementById('ios-modal'),
+    joystickContainer: document.getElementById('joystick-container'),
+    joystickKnob: document.getElementById('joystick-knob'),
+    levelText: document.getElementById('level-text'),
+    levelUpScreen: document.getElementById('level-up-screen'),
+    levelUpText: document.getElementById('level-up-text'),
+    loadingText: document.getElementById('loading-text'),
+    restartBtn: document.getElementById('restart-btn'),
+    scoreText: document.getElementById('score-text'),
+    startBtn: document.getElementById('start-btn'),
+    startScreen: document.getElementById('start-screen'),
+    continueBtn: document.getElementById('continue-btn'),
+};
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -19,12 +55,29 @@ levelAudio.loop = true;
 const winAudio = new Audio(LEVEL_WIN_AUDIO_URL);
 const gameOverAudio = new Audio(LEVEL_GAMEOVER_AUDIO_URL); 
 
-var gameScale = 1, lastTime = 0, gameActive = false, animationFrameId = null;
-var joystickActive = false, keys = {};
-var currentLevel = 1, score = 0, levelScoreStart = 0, worldStep = 0, bossActive = false;
+// --- 2. STATE ---
+let gameScale = 1;
+let lastTime = 0;
+let gameActive = false;
+let animationFrameId = null;
+
+let joystickActive = false;
+const keys = {};
+
+let currentLevel = 1;
+let score = 0;
+let levelScoreStart = 0;
+let worldStep = 0;
+let bossActive = false;
    
-var poops = [], splats = [], targets = [], powerUps = [], beerGlasses = [], activeBosses = [];
-var player = {
+let poops = [];
+let splats = [];
+let targets = [];
+let powerUps = [];
+let beerGlasses = [];
+let activeBosses = [];
+
+const player = {
     x: 100, y: 150, width: 240, height: 100, speed: 15, dx: 0, dy: 0,
     hp: 100, hitFlash: 0, isDead: false, fallSpeed: 0, facing: 1,
     activeWeapons: { 'DIARREE': 0, 'POEPBOM': 0 }, shootCooldown: 0
@@ -109,18 +162,42 @@ async function preload() {
     });
     await Promise.all(promises);
     if (assets.background.loaded) bgImg.src = assets.background.src;
-    document.getElementById('loading-text').style.display = 'none';
-    document.getElementById('start-btn').disabled = false;
+    if (els.loadingText) els.loadingText.style.display = 'none';
+    if (els.startBtn) els.startBtn.disabled = false;
 }
 
 function checkIOS() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.navigator.standalone === true;
-    if (isIOS && !isStandalone) document.getElementById('ios-modal').style.display = 'flex';
+    if (isIOS && !isStandalone && els.iosModal) els.iosModal.style.display = 'flex';
+}
+
+function initDebugUI() {
+    if (!IS_DEBUG && els.debugPanel) els.debugPanel.style.display = 'none';
+}
+
+function openExternalUrl(url) {
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function initExternalLinks() {
+    document.querySelectorAll('[data-open-url]').forEach((el) => {
+        const url = el.getAttribute('data-open-url');
+        el.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            openExternalUrl(url);
+        }, { passive: false });
+        el.addEventListener('click', (e) => {
+            if (Date.now() - lastTouchTs < 600) return;
+            e.preventDefault();
+            openExternalUrl(url);
+        });
+    });
 }
 
 function addFailedAsset(label) {
-    const container = document.getElementById('failed-assets-container');
+    const container = els.failedAssetsContainer;
     if (container) {
         if (container.innerHTML === "") container.innerHTML = "<strong>Fout bij laden van:</strong><br>";
         const span = document.createElement('span'); 
@@ -131,11 +208,11 @@ function addFailedAsset(label) {
 
 function updateLoadingBar(current, total) {
     const pct = Math.floor((current / total) * 100);
-    document.getElementById('loading-text').innerText = `Laden... ${pct}%`;
+    if (els.loadingText) els.loadingText.innerText = `Laden... ${pct}%`;
 }
 
 function triggerHealVisual() {
-    const hb = document.getElementById('health-container');
+    const hb = els.healthContainer;
     if (hb) { hb.classList.remove('heal-animate'); void hb.offsetWidth; hb.classList.add('heal-animate'); }
 }
 
@@ -149,7 +226,7 @@ function spawnBoss() {
         speed: 2.5, currentVx: -2.5, vxTimer: 0, isHit: false, hitFlash: 0, throwTimer: 45 + (i*15),
         throwVisualTimer: 0, eatVisualTimer: 0, throwFlip: false, moveFlip: false, moveFlipTimer: 0
     }));
-    document.getElementById('boss-health-container').style.display = 'block';
+    if (els.bossHealthContainer) els.bossHealthContainer.style.display = 'block';
     updateBossUI();
 }
 
@@ -157,16 +234,17 @@ function showLevelUp() {
     gameActive = false; levelAudio.pause(); levelAudio.currentTime = 0;
     winAudio.play().catch(() => {});
     const cfg = levelBossConfig[currentLevel];
-    document.getElementById('level-up-text').innerText = cfg.map(c => assets[c].name).join(" en ") + " verslagen.";
-    const container = document.getElementById('boss-summary-container');
-    container.innerHTML = '';
+    if (els.levelUpText) els.levelUpText.innerText = cfg.map(c => assets[c].name).join(" en ") + " verslagen.";
+    const container = els.bossSummaryContainer;
+    if (container) container.innerHTML = '';
     cfg.forEach(c => {
+        if (!container) return;
         const img = document.createElement('img');
         img.src = assets[bossDownMap[c]]?.src || assets[c].src;
         img.className = 'boss-summary-img';
         container.appendChild(img);
     });
-    document.getElementById('level-up-screen').style.display = 'flex';
+    if (els.levelUpScreen) els.levelUpScreen.style.display = 'flex';
 }
 
 function resize() { 
@@ -176,7 +254,7 @@ function resize() {
 
 async function requestLandscape() {
     try {
-        const container = document.getElementById('game-container');
+        const container = els.gameContainer || document.getElementById('game-container');
         if (container.requestFullscreen) await container.requestFullscreen();
         else if (container.webkitRequestFullscreen) await container.webkitRequestFullscreen();
         if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape').catch(() => {});
@@ -222,7 +300,7 @@ window.triggerSpecial = (type) => { if (player.activeWeapons[type] > 0) executeP
 function updateBossUI() {
     const total = activeBosses.reduce((s, b) => s + Math.max(0, b.hp), 0);
     const max = activeBosses.reduce((s, b) => s + b.maxHp, 0);
-    const bar = document.getElementById('boss-health-bar');
+    const bar = els.bossHealthBar;
     if (bar) bar.style.width = (total / (max||1) * 100) + '%';
 }
 
@@ -232,10 +310,10 @@ function resetGame() {
     player.activeWeapons = { 'DIARREE': 0, 'POEPBOM': 0 };
     poops = []; splats = []; targets = []; powerUps = []; beerGlasses = []; activeBosses = [];
     bossActive = false; worldStep = 0; gameActive = true;
-    const hb = document.getElementById('health-bar'); if(hb) hb.style.width = '100%';
-    document.getElementById('boss-health-container').style.display = 'none';
-    document.getElementById('game-over-screen').style.display = 'none';
-    document.getElementById('level-up-screen').style.display = 'none';
+    if (els.healthBar) els.healthBar.style.width = '100%';
+    if (els.bossHealthContainer) els.bossHealthContainer.style.display = 'none';
+    if (els.gameOverScreen) els.gameOverScreen.style.display = 'none';
+    if (els.levelUpScreen) els.levelUpScreen.style.display = 'none';
     ['DIARREE', 'POEPBOM'].forEach(k => {
         const btn = weaponButtons[k];
         if(btn) { btn.classList.remove('active'); btn.querySelector('.timer-overlay').style.height = '0%'; }
@@ -254,8 +332,8 @@ function update(dt) {
         if(player.y > VIRTUAL_HEIGHT) { 
             gameActive = false; levelAudio.pause(); levelAudio.currentTime = 0;
             gameOverAudio.play().catch(() => {});
-            document.getElementById('final-score').innerText = score; 
-            document.getElementById('game-over-screen').style.display = 'flex'; 
+            if (els.finalScore) els.finalScore.innerText = score; 
+            if (els.gameOverScreen) els.gameOverScreen.style.display = 'flex'; 
         }
         return;
     }
@@ -271,8 +349,8 @@ function update(dt) {
     worldStep += currentEffectiveWorldSpeed;
     player.x = Math.max(-50, Math.min((canvas.width/gameScale) - 100, player.x + player.dx));
     player.y = Math.max(-20, Math.min(VIRTUAL_HEIGHT / 1.8, player.y + player.dy));
-    document.getElementById('score-text').innerText = score;
-    document.getElementById('level-text').innerText = currentLevel;
+    if (els.scoreText) els.scoreText.innerText = score;
+    if (els.levelText) els.levelText.innerText = currentLevel;
     const sec = dt / 1000;
     Object.keys(player.activeWeapons).forEach(k => {
         if(player.activeWeapons[k] > 0) {
@@ -295,7 +373,7 @@ function update(dt) {
             if (p.type.type === 'WEAPON') player.activeWeapons[p.type.weapon] = 8;
             else if (p.type.type === 'HEAL_SMALL') { player.hp = Math.min(100, player.hp + 20); triggerHealVisual(); }
             else if (p.type.type === 'HEAL_FULL') { player.hp = 100; triggerHealVisual(); }
-            document.getElementById('health-bar').style.width = player.hp + '%';
+            if (els.healthBar) els.healthBar.style.width = player.hp + '%';
             powerUps.splice(i,1);
         } else if(p.x < -100) powerUps.splice(i,1);
     }
@@ -304,7 +382,7 @@ function update(dt) {
         if(bg.y > VIRTUAL_HEIGHT) { beerGlasses.splice(i,1); continue; }
         if(bg.x > player.x && bg.x < player.x+player.width && bg.y > player.y && bg.y < player.y+player.height) {
             player.hp -= (5 + (currentLevel-1)*2); player.hitFlash = 15; beerGlasses.splice(i, 1);
-            document.getElementById('health-bar').style.width = Math.max(0, player.hp)+'%';
+            if (els.healthBar) els.healthBar.style.width = Math.max(0, player.hp)+'%';
             if(player.hp <= 0) player.isDead = true;
         }
     }
@@ -384,45 +462,114 @@ function render() {
     if(gameActive) animationFrameId = requestAnimationFrame(gameLoop);
 }
 
-function gameLoop(t) { if(!lastTime) lastTime = t; update(t - lastTime); lastTime = t; render(); }
+function gameLoop(t) {
+    if (!lastTime) lastTime = t;
+    const dt = Math.min(100, Math.max(0, t - lastTime));
+    lastTime = t;
+    update(dt);
+    render();
+}
 
-window.onkeydown = (e) => keys[e.code] = true; window.onkeyup = (e) => keys[e.code] = false;
+window.addEventListener('keydown', (e) => {
+    keys[e.code] = true;
+    if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
+}, { passive: false });
+window.addEventListener('keyup', (e) => {
+    keys[e.code] = false;
+});
+
 const moveJoystick = (input) => {
-    const r = document.getElementById('joystick-container').getBoundingClientRect();
+    if (!els.joystickContainer || !els.joystickKnob) return;
+    const r = els.joystickContainer.getBoundingClientRect();
     const dx = input.clientX - (r.left + r.width/2), dy = input.clientY - (r.top + r.height/2);
     const dist = Math.sqrt(dx*dx + dy*dy), m = Math.min(dist, 50), a = Math.atan2(dy, dx);
-    document.getElementById('joystick-knob').style.transform = `translate(${Math.cos(a)*m}px, ${Math.sin(a)*m}px)`;
+    els.joystickKnob.style.transform = `translate(${Math.cos(a)*m}px, ${Math.sin(a)*m}px)`;
     player.dx = Math.cos(a) * (m/50) * player.speed; player.dy = Math.sin(a) * (m/50) * player.speed;
     if(player.dx !== 0) player.facing = player.dx > 0 ? 1 : -1;
 };
-const jCont = document.getElementById('joystick-container');
-jCont.onmousedown = jCont.ontouchstart = (e) => { joystickActive = true; moveJoystick(e.touches ? e.touches[0] : e); };
-window.onmousemove = window.ontouchmove = (e) => { if(joystickActive) moveJoystick(e.touches ? e.touches[0] : e); };
-window.onmouseup = window.ontouchend = () => { joystickActive = false; document.getElementById('joystick-knob').style.transform = 'translate(0,0)'; player.dx = 0; player.dy = 0; };
+const endJoystick = () => {
+    joystickActive = false;
+    if (els.joystickKnob) els.joystickKnob.style.transform = 'translate(0,0)';
+    player.dx = 0; player.dy = 0;
+};
 
-const bind = (id, fn) => { let el = document.getElementById(id); if(el) el.onclick = el.ontouchstart = (e) => { e.preventDefault(); fn(); }; };
+// Pointer Events (prevents double-triggering click+touch)
+if (els.joystickContainer) {
+    els.joystickContainer.addEventListener('pointerdown', (e) => {
+        joystickActive = true;
+        els.joystickContainer.setPointerCapture?.(e.pointerId);
+        moveJoystick(e);
+        e.preventDefault();
+    }, { passive: false });
+}
+window.addEventListener('pointermove', (e) => { if (joystickActive) moveJoystick(e); });
+window.addEventListener('pointerup', endJoystick);
+window.addEventListener('pointercancel', endJoystick);
+
+let lastTouchTs = 0;
+window.addEventListener('touchstart', () => { lastTouchTs = Date.now(); }, { passive: true });
+
+const bind = (id, fn) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('pointerdown', (e) => { e.preventDefault(); fn(); }, { passive: false });
+    el.addEventListener('click', (e) => {
+        // Avoid double fire after a touch (mobile browsers)
+        if (Date.now() - lastTouchTs < 600) return;
+        e.preventDefault();
+        fn();
+    });
+};
+
 bind('start-btn', async () => { 
     if(gameActive) return; 
     [levelAudio, winAudio, gameOverAudio].forEach(a => { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); });
-    await requestLandscape(); score = 0; levelScoreStart = 0; currentLevel = 1; document.getElementById('start-screen').style.display='none'; resetGame(); animationFrameId = requestAnimationFrame(gameLoop); 
+    await requestLandscape();
+    score = 0; levelScoreStart = 0; currentLevel = 1;
+    if (els.startScreen) els.startScreen.style.display = 'none';
+    resetGame();
+    lastTime = 0;
+    animationFrameId = requestAnimationFrame(gameLoop);
 });
-bind('restart-btn', () => { score = 0; levelScoreStart = 0; currentLevel = 1; resetGame(); animationFrameId = requestAnimationFrame(gameLoop); });
-bind('continue-btn', () => { currentLevel++; levelScoreStart = score; resetGame(); animationFrameId = requestAnimationFrame(gameLoop); });
+bind('restart-btn', () => { score = 0; levelScoreStart = 0; currentLevel = 1; resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); });
+bind('continue-btn', () => { currentLevel++; levelScoreStart = score; resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); });
 bind('fire-btn', () => executePoop('NORMAL'));
 bind('btn-DIARREE', () => window.triggerSpecial('DIARREE'));
 bind('btn-POEPBOM', () => window.triggerSpecial('POEPBOM'));
-bind('info-btn', () => { document.getElementById('info-modal').style.display = 'flex'; });
-bind('close-info-btn', () => { document.getElementById('info-modal').style.display = 'none'; });
+bind('info-btn', () => { if (els.infoModal) els.infoModal.style.display = 'flex'; });
+bind('close-info-btn', () => { if (els.infoModal) els.infoModal.style.display = 'none'; });
+bind('ios-later-btn', () => { if (els.iosModal) els.iosModal.style.display = 'none'; });
 
-window.forceLevel = (n) => { 
+function forceLevel(n) {
+    if (!IS_DEBUG) return;
     currentLevel = n; 
     levelScoreStart = (n - 1) * POINTS_TO_BOSS;
     score = levelScoreStart + POINTS_TO_BOSS; 
     resetGame(); 
-    document.getElementById('start-screen').style.display='none'; 
-    if (!gameActive) animationFrameId = requestAnimationFrame(gameLoop);
-};
+    if (els.startScreen) els.startScreen.style.display = 'none';
+    lastTime = 0;
+    animationFrameId = requestAnimationFrame(gameLoop);
+}
 
-window.onload = () => { preload(); checkIOS(); };
+// Expose only in debug mode (handy in console)
+if (IS_DEBUG) window.forceLevel = forceLevel;
+
+window.addEventListener('load', () => {
+    preload();
+    checkIOS();
+    initDebugUI();
+    initExternalLinks();
+
+    if (IS_DEBUG) {
+        document.querySelectorAll('.debug-level-btn[data-level]').forEach((btn) => {
+            btn.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                const lvl = Number(btn.getAttribute('data-level'));
+                if (Number.isFinite(lvl)) forceLevel(lvl);
+            }, { passive: false });
+        });
+    }
+}, { once: true });
 window.addEventListener('resize', resize); resize();
 
+})();
