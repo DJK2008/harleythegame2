@@ -713,7 +713,7 @@ function render() {
         ctx.save();
     
         // Teken rond het midden van de sprite
-        ctx.translate(t.x + halfW, VIRTUAL_HEIGHT - 50);
+        ctx.translate(t.x + halfW, t.isHit ? VIRTUAL_HEIGHT - 50 + 28 : VIRTUAL_HEIGHT - 50);
     
         // Spiegelen
         ctx.scale(scaleX, 1);
@@ -740,7 +740,7 @@ function render() {
         // Centreer op de baas
         ctx.translate(
             b.x + b.width / 2,
-            b.isHit ? VIRTUAL_HEIGHT - 50 : b.y + b.height / 2
+            b.isHit ? VIRTUAL_HEIGHT - 50 - 45 : b.y + b.height / 2 - 35
         );
     
         // Bepaal looprichting op basis van currentVx
