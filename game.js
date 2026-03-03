@@ -145,6 +145,7 @@ async function preload() {
     const keysList = Object.keys(assets);
     const total = keysList.length;
     let loadedCount = 0;
+    updateLoadingBar(0, total);
     const promises = keysList.map(key => {
         return new Promise((resolve) => {
             const item = assets[key];
@@ -159,12 +160,20 @@ async function preload() {
             }, 10000); 
 
             img.onload = () => {
-                clearTimeout(timeout); 
-                item.canvas.width = img.width; 
-                item.canvas.height = img.height;
-                const aCtx = item.canvas.getContext('2d'); 
-                aCtx.drawImage(img, 0, 0);
-                item.loaded = true; loadedCount++; updateLoadingBar(loadedCount, total); resolve();
+                clearTimeout(timeout);
+                try {
+                    item.canvas.width = img.width;
+                    item.canvas.height = img.height;
+                    const aCtx = item.canvas.getContext('2d');
+                    aCtx.drawImage(img, 0, 0);
+                    item.loaded = true;
+                } catch (e) {
+                    item.loaded = false;
+                    addFailedAsset(item.label);
+                }
+                loadedCount++;
+                updateLoadingBar(loadedCount, total);
+                resolve();
             };
             img.onerror = () => {
                 clearTimeout(timeout); item.loaded = false; loadedCount++; addFailedAsset(item.label); updateLoadingBar(loadedCount, total); resolve();
