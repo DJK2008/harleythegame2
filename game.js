@@ -773,8 +773,8 @@ function render() {
         }
     
         if (assets[sk].loaded) {
-            // Hit-sprites (normalHit, supCDown) zijn klein in de bron; schalen voor gelijke visuele grootte
-            const hitScale = (sk === 'supCDown') ? 1.8 : (sk === 'normalHit') ? 1.35 : 1;
+            // Hit-sprites (normalHit, supCDown, hooliHit) zijn klein in de bron; schalen voor gelijke visuele grootte
+            const hitScale = (sk === 'supCDown') ? 1.8 : (sk === 'normalHit') ? 1.35 : (sk === 'hooliHit') ? 1.2 : 1;
             const drawHalfW = halfW * hitScale;
             const drawFullH = fullH * hitScale;
             ctx.drawImage(
