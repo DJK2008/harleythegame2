@@ -508,13 +508,15 @@ function update(dt) {
         const isHooligan = Math.random() < 0.35;          // ~35% kans op hooligan
 
         if (isHooligan) {
-            // Hooligans: komen links in beeld, gaan daarna zwabberen
+            // Hooligans: verschillende ren-snelheden onderling (speedMult 0.65–1.35)
+            const speedMult = 0.65 + Math.random() * 0.7;
             targets.push({
                 type: 'hooligan',
                 x: -160,
                 y: spawnY,
                 speed: 4 + Math.random() * 2,
-                vx: BASE_WORLD_SPEED + 6,
+                speedMult,
+                vx: (BASE_WORLD_SPEED + 6) * speedMult,
                 wanderTimer: 0,
                 isHit: false,
                 variant: 1,
@@ -523,16 +525,16 @@ function update(dt) {
                 facing: 1,
                 turnPhase: 0,
                 turning: false,
-                animTime: Math.random() * 8,      // start op willekeurig moment in de loop
-                animSpeed: 0.12 + Math.random()*0.04 // kleine variatie in loopsnelheid
+                animTime: Math.random() * 8,
+                animSpeed: (0.08 + Math.random() * 0.06) * speedMult  // ren-animatie in pas met loopsnelheid
             });
         } else {
-            // Normale supporters: lopen van links naar rechts
+            // Normale supporters: verschillende loopsnelheden onderling (5–11 px/frame)
             targets.push({
                 type: 'normal',
-                x: -160,                                   // net buiten beeld links
+                x: -160,
                 y: spawnY,
-                speed: 8 + Math.random() * 2,             // 8–10 px/frame → duidelijk naar rechts
+                speed: 5 + Math.random() * 6,
                 isHit: false,
                 variant: Math.random() < 0.5 ? 1 : 2,
                 hitTime: 0,
@@ -555,11 +557,12 @@ function update(dt) {
                 // Hooligans: random links/rechts bewegen, plus wereld‑scroll
                 t.wanderTimer = (t.wanderTimer || 0) - 1;
                 if (t.wanderTimer <= 0) {
-                    const base = BASE_WORLD_SPEED + 4;    // 10
-                    const range = 4;                      // 10–14
+                    const base = BASE_WORLD_SPEED + 4;
+                    const range = 4;
                     const dir = Math.random() < 0.5 ? -1 : 1;
-                    t.vx = dir * (base + Math.random() * range);
-                    t.wanderTimer = 40 + Math.random() * 60; // ~0.7–1.6 sec
+                    const speedMult = t.speedMult ?? 1;
+                    t.vx = dir * (base + Math.random() * range) * speedMult;
+                    t.wanderTimer = 40 + Math.random() * 60;
                 }
             
                 // Richting bepalen o.b.v. vx
@@ -609,7 +612,6 @@ function update(dt) {
                     t.x = rightLimit;
                     t.vx = -Math.abs(t.vx || 0);
                 }
-            // helemaal onderaan in de hooligan-tak, voordat je uit de else if valt:
             t.animTime += t.animSpeed;
             }
         } else {
@@ -747,8 +749,7 @@ function render() {
                     const throwFrame = Math.min(5, Math.floor((100 - t.throwTimer) / 5));
                     sk = HOOLI_THROW_KEYS[throwFrame];
                 } else {
-                    const animFps = 8;
-                    const frameIndex = Math.floor((Date.now() / 1000) * animFps) % HOOLI_RUN_KEYS.length;
+                    const frameIndex = Math.floor(t.animTime || 0) % HOOLI_RUN_KEYS.length;
                     sk = HOOLI_RUN_KEYS[frameIndex];
                 }
             } else {
