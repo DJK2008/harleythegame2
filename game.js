@@ -745,7 +745,7 @@ function render() {
         ctx.save();
     
         // Teken rond het midden van de sprite
-        const hitYOffset = (t.isHit && t.variant === 3) ? 95 : (t.isHit && t.variant === 1) ? 65 : (t.isHit ? 28 : 0);  // supA/supC op stoep, supC lager
+        const hitYOffset = (t.isHit && t.variant === 3) ? 125 : (t.isHit && t.variant === 1) ? 65 : (t.isHit ? 28 : 0);  // supA/supC op stoep, supC lager
         ctx.translate(t.x + halfW, VIRTUAL_HEIGHT - 50 + hitYOffset);
     
         // Spiegelen
