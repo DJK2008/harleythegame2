@@ -535,15 +535,17 @@ function update(dt) {
             });
         } else {
             // Normale supporters: verschillende loopsnelheden onderling (5–11 px/frame)
+            const variant = Math.random() < 0.5 ? 1 : 2;
             targets.push({
                 type: 'normal',
                 x: -160,
                 y: spawnY,
                 speed: 5 + Math.random() * 6,
                 isHit: false,
-                variant: Math.random() < 0.5 ? 1 : 2,
+                variant,
                 hitTime: 0,
-                throwTimer: 0
+                throwTimer: 0,
+                ...(variant === 1 && { animTime: Math.random() * 5, animSpeed: 0.12 })
             });
         }
     }
@@ -557,6 +559,8 @@ function update(dt) {
                 // Normale supporters: lopen links → rechts
                 t.x += t.speed;                  // eigen loopsnelheid naar rechts
                 t.x -= currentEffectiveWorldSpeed; // wereld schuift naar links
+                // Supporter A (variant 1): run-animatie door frames
+                if (t.variant === 1) t.animTime = (t.animTime || 0) + (t.animSpeed ?? 0.12);
 
             } else if (t.type === 'hooligan') {
                 // Hooligans: random links/rechts bewegen, plus wereld‑scroll
