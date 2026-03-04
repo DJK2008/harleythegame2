@@ -152,12 +152,12 @@ const assets = {
 };
 
 const HOOLI_RUN_KEYS = [
-    'hooliRun1',
+ 
     'hooliRun2',
     'hooliRun3',
     'hooliRun4',
   
-    'hooliRun6',
+   
     'hooliRun7'
   ];
 
