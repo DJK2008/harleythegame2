@@ -127,8 +127,6 @@ const assets = {
     supC3: { src: 'assets/supC/supC3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 3' },
     supCDown: { src: 'assets/supC/supC_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C geraakt' },
     normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
-    normal2: { src: 'assets/sup2ren.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 2' },
-    normalHit2: { src: 'assets/sup4_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 2' },
 
     // Hooligan: assets/hooligan — ren hooli1–5, gooi hooli1gooit–hooli6gooit
     hooliRun1: { src: 'assets/hooligan/hooli1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan run 1' },
@@ -512,10 +510,11 @@ function update(dt) {
         }
         if(hit) poops.splice(i, 1);
     }
-    // Spawn supporters / hooligans
+    // Spawn supporters / hooligans (level 1: meer normals, hoger level: meer hooligans)
     if (!bossActive && targets.length < 5 && Math.random() < 0.04) {
         const spawnY = VIRTUAL_HEIGHT - 200;
-        const isHooligan = Math.random() < 0.35;          // ~35% kans op hooligan
+        const hooliganChance = 0.12 + (currentLevel - 1) * 0.045;  // L1 ~12%, L10 ~52%
+        const isHooligan = Math.random() < Math.min(0.6, hooliganChance);
 
         if (isHooligan) {
             // Hooligans: verschillende ren-snelheden onderling (speedMult 0.65–1.35)
@@ -539,8 +538,8 @@ function update(dt) {
                 animSpeed: (0.08 + Math.random() * 0.06) * speedMult  // ren-animatie in pas met loopsnelheid
             });
         } else {
-            // Normale supporters: verschillende loopsnelheden onderling (5–11 px/frame)
-            const variant = [1, 2, 3][Math.floor(Math.random() * 3)];
+            // Normale supporters: supA (1) of supC (3)
+            const variant = Math.random() < 0.5 ? 1 : 3;
             targets.push({
                 type: 'normal',
                 x: -160,
@@ -756,7 +755,7 @@ function render() {
         if (t.isHit) {
             sk = isHooligan
                 ? 'hooliHit'
-                : (t.variant === 2 ? 'normalHit2' : t.variant === 3 ? 'supCDown' : 'normalHit');
+                : (t.variant === 3 ? 'supCDown' : 'normalHit');
         } else {
             if (isHooligan) {
                 if (t.throwTimer > 70) {
@@ -767,8 +766,8 @@ function render() {
                     sk = HOOLI_RUN_KEYS[frameIndex];
                 }
             } else {
-                const runKeys = t.variant === 2 ? null : (t.variant === 3 ? SUP_C_KEYS : SUP_ARENT_KEYS);
-                sk = t.variant === 2 ? 'normal2' : runKeys[Math.floor(t.animTime || 0) % runKeys.length];
+                const runKeys = t.variant === 3 ? SUP_C_KEYS : SUP_ARENT_KEYS;
+                sk = runKeys[Math.floor(t.animTime || 0) % runKeys.length];
             }
         }
     
