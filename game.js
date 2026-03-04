@@ -153,7 +153,7 @@ const assets = {
 
 const HOOLI_RUN_KEYS = [
     'hooliRun3', // linkerbeen voor
-    'hooliRun6'  // rechterbeen voor
+    'hooliRun7'  // rechterbeen voor
 ];
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
