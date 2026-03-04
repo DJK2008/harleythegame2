@@ -519,20 +519,20 @@ function update(dt) {
             // Hooligans: komen links in beeld, gaan daarna zwabberen
             targets.push({
                 type: 'hooligan',
-                x: -160,                                   // net buiten beeld links
+                x: -160,
                 y: spawnY,
-                // basis voor hun eigen “max” bewegingssnelheid (niet te laag t.o.v. world scroll)
-                speed: 4 + Math.random() * 2,             // 4–6
-                // start stevig naar rechts zodat ze zeker in beeld komen
-                vx: BASE_WORLD_SPEED + 6,                 // 12 px/frame, wereld schuift ~6 naar links
-                wanderTimer: 0,                           // voor random richtingswissel
+                speed: 4 + Math.random() * 2,
+                vx: BASE_WORLD_SPEED + 6,
+                wanderTimer: 0,
                 isHit: false,
                 variant: 1,
                 hitTime: 0,
                 throwTimer: 0,
-                facing: 1,                                 // 1 = naar rechts kijkend, -1 = naar links
-                turnPhase: 0,                               // 0..1 voor omdraai-animatie
-                turning: false
+                facing: 1,
+                turnPhase: 0,
+                turning: false,
+                animTime: Math.random() * 8,      // start op willekeurig moment in de loop
+                animSpeed: 0.12 + Math.random()*0.04 // kleine variatie in loopsnelheid
             });
         } else {
             // Normale supporters: lopen van links naar rechts
@@ -617,6 +617,8 @@ function update(dt) {
                     t.x = rightLimit;
                     t.vx = -Math.abs(t.vx || 0);
                 }
+            // helemaal onderaan in de hooligan-tak, voordat je uit de else if valt:
+            t.animTime += t.animSpeed;
             }
         } else {
             // Geraakte targets blijven op de grond en schuiven mee met de wereld
