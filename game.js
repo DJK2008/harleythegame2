@@ -745,7 +745,7 @@ function render() {
         ctx.save();
     
         // Teken rond het midden van de sprite
-        const hitYOffset = (t.isHit && t.variant === 3) ? 125 : (t.isHit ? 28 : 0);  // supC op de grond op stoep
+        const hitYOffset = (t.isHit && (t.variant === 1 || t.variant === 3)) ? 65 : (t.isHit ? 28 : 0);  // normale supporters op de grond op stoep
         ctx.translate(t.x + halfW, VIRTUAL_HEIGHT - 50 + hitYOffset);
     
         // Spiegelen
