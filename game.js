@@ -122,6 +122,10 @@ const assets = {
     supArent3: { src: 'assets/supA/supArent3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1 run 3' },
     supArent4: { src: 'assets/supA/supArent4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1 run 4' },
     supArent5: { src: 'assets/supA/supArent5.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1 run 5' },
+    supC1: { src: 'assets/supC/supC1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 1' },
+    supC2: { src: 'assets/supC/supC2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 2' },
+    supC3: { src: 'assets/supC/supC3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 3' },
+    supCDown: { src: 'assets/supC/supC_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C geraakt' },
     normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
     normal2: { src: 'assets/sup2ren.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 2' },
     normalHit2: { src: 'assets/sup4_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 2' },
@@ -158,6 +162,7 @@ const assets = {
 const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hooliRun5'];
 const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThrow4', 'hooliThrow5', 'hooliThrow6'];
 const SUP_ARENT_KEYS = ['supArent1', 'supArent2', 'supArent3', 'supArent4', 'supArent5'];
+const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
@@ -535,7 +540,7 @@ function update(dt) {
             });
         } else {
             // Normale supporters: verschillende loopsnelheden onderling (5–11 px/frame)
-            const variant = Math.random() < 0.5 ? 1 : 2;
+            const variant = [1, 2, 3][Math.floor(Math.random() * 3)];
             targets.push({
                 type: 'normal',
                 x: -160,
@@ -545,7 +550,7 @@ function update(dt) {
                 variant,
                 hitTime: 0,
                 throwTimer: 0,
-                ...(variant === 1 && { animTime: Math.random() * 5, animSpeed: 0.12 })
+                ...((variant === 1 || variant === 3) && { animTime: Math.random() * (variant === 3 ? 3 : 5), animSpeed: variant === 3 ? 0.15 : 0.12 })
             });
         }
     }
@@ -559,8 +564,8 @@ function update(dt) {
                 // Normale supporters: lopen links → rechts
                 t.x += t.speed;                  // eigen loopsnelheid naar rechts
                 t.x -= currentEffectiveWorldSpeed; // wereld schuift naar links
-                // Supporter A (variant 1): run-animatie door frames
-                if (t.variant === 1) t.animTime = (t.animTime || 0) + (t.animSpeed ?? 0.12);
+                // Supporter A (variant 1) en C (variant 3): run-animatie door frames
+                if (t.variant === 1 || t.variant === 3) t.animTime = (t.animTime || 0) + (t.animSpeed ?? 0.12);
 
             } else if (t.type === 'hooligan') {
                 // Hooligans: random links/rechts bewegen, plus wereld‑scroll
@@ -751,7 +756,7 @@ function render() {
         if (t.isHit) {
             sk = isHooligan
                 ? 'hooliHit'
-                : (t.variant === 2 ? 'normalHit2' : 'normalHit');
+                : (t.variant === 2 ? 'normalHit2' : t.variant === 3 ? 'supCDown' : 'normalHit');
         } else {
             if (isHooligan) {
                 if (t.throwTimer > 70) {
@@ -762,7 +767,8 @@ function render() {
                     sk = HOOLI_RUN_KEYS[frameIndex];
                 }
             } else {
-                sk = (t.variant === 2 ? 'normal2' : SUP_ARENT_KEYS[Math.floor(t.animTime || 0) % SUP_ARENT_KEYS.length]);
+                const runKeys = t.variant === 2 ? null : (t.variant === 3 ? SUP_C_KEYS : SUP_ARENT_KEYS);
+                sk = t.variant === 2 ? 'normal2' : runKeys[Math.floor(t.animTime || 0) % runKeys.length];
             }
         }
     
