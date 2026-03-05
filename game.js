@@ -125,6 +125,15 @@ const BOSS_SPEEDS = {
     boss4: 2.5
 };
 
+// --- Spawn-verhoudingen (makkelijk aanpasbaar) ---
+// Normaal vs hooligan: L1 = 80% normaal / 20% hooligan; hoger level = meer hooligans
+const HOOLIGAN_CHANCE_LEVEL1 = 0.2;   // kans hooligan op level 1 (0.2 = 20% hooligan, 80% normaal)
+const HOOLIGAN_CHANCE_MAX = 0.85;     // max kans hooligan op hogere levels
+// Verhouding onder normale supporters: gewichten A : C : D (bijv. 80 : 20 : 20 → ~67% A, ~17% C, ~17% D)
+const SUP_A_SPAWN_WEIGHT = 80;
+const SUP_C_SPAWN_WEIGHT = 20;
+const SUP_D_SPAWN_WEIGHT = 20;
+
 const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level3', 8: 'bg_level2', 9: 'bg_level1', 10: 'background' };
 
 const assets = {
@@ -632,10 +641,10 @@ function update(dt) {
         }
         if(hit) poops.splice(i, 1);
     }
-    // Spawn supporters / hooligans: gelijk aantal normale supporters (supA/supC/supD), hooligan-kans afhankelijk van level
+    // Spawn supporters / hooligans: verhouding instelbaar via HOOLIGAN_CHANCE_* en SUP_*_SPAWN_WEIGHT
     if (!bossActive && targets.length < 5 && Math.random() < 0.04) {
         const spawnY = VIRTUAL_HEIGHT - 200;
-        const hooliganChance = Math.min(0.85, 0.35 + (currentLevel - 1) * 0.055);  // L1 ~35%, L10 ~85%
+        const hooliganChance = Math.min(HOOLIGAN_CHANCE_MAX, HOOLIGAN_CHANCE_LEVEL1 + (currentLevel - 1) * ((HOOLIGAN_CHANCE_MAX - HOOLIGAN_CHANCE_LEVEL1) / 9));
         const isHooligan = Math.random() < hooliganChance;
 
         if (isHooligan) {
@@ -660,8 +669,10 @@ function update(dt) {
                 animSpeed: (0.08 + Math.random() * 0.06) * speedMult  // ren-animatie in pas met loopsnelheid
             });
         } else {
-            // Normale supporters: supA (1), supC (3) of supD/groen (4)
-            const variant = [1, 3, 4][Math.floor(Math.random() * 3)];
+            // Normale supporters: gewogen keuze A (1), C (3), D (4) via SUP_*_SPAWN_WEIGHT
+            const totalWeight = SUP_A_SPAWN_WEIGHT + SUP_C_SPAWN_WEIGHT + SUP_D_SPAWN_WEIGHT;
+            const r = Math.random() * totalWeight;
+            const variant = r < SUP_A_SPAWN_WEIGHT ? 1 : r < SUP_A_SPAWN_WEIGHT + SUP_C_SPAWN_WEIGHT ? 3 : 4;
             const baseSpeed = SUP_NORMAL_BASE_SPEED + Math.random() * SUP_NORMAL_SPEED_RANGE;
             const speedMult =
                 variant === 1 ? SUP_A_SPEED_MULT :
