@@ -253,9 +253,11 @@ const assets = {
     hooliThrow6: { src: 'assets/hooligan/hooli6gooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Hooligan gooit 6' },
     hooliHit:   { src: 'assets/hc_sup_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt Hooli' },
 
-    boss0: { src: 'assets/clown/clownloopt/clownog-60 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, name: "Clown", label: 'Boss 0 (Clown)' },
-    boss0Throw: { src: 'assets/clown/clowngooit/clownog-19 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 0 Gooit' },
-    boss0Down: { src: 'assets/clown/clowndown/ezgif-189454d3ff861def-1 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 0 Down' },
+    boss0: { src: 'assets/clown/clownloopt/clownog-58 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, name: "Clown", label: 'Boss 0 (Clown)' },
+    ...Object.fromEntries([58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80].map(n => ['clownLoop' + n, { src: `assets/clown/clownloopt/clownog-${n} (gesleept).png`, canvas: document.createElement('canvas'), loaded: false, label: 'Clown loop ' + n }])),
+    ...Object.fromEntries([19,20,21,22,23,24,25,26,27,31,32,33,34,40,55,56,57].map(n => ['clownThrow' + n, { src: `assets/clown/clowngooit/clownog-${n} (gesleept).png`, canvas: document.createElement('canvas'), loaded: false, label: 'Clown gooit ' + n }])),
+    ...Object.fromEntries([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58,59,60].map(n => ['clownDown' + n, { src: `assets/clown/clowndown/ezgif-189454d3ff861def-${n} (gesleept).png`, canvas: document.createElement('canvas'), loaded: false, label: 'Clown down ' + n }])),
+    clownDown1: { src: 'assets/clown/clowndown/ezgif-189454d3ff861def-1 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Clown down 1' },
     boss1: { src: 'assets/masc_rent.png', canvas: document.createElement('canvas'), loaded: false, name: "Zwolfje", label: 'Boss 1' },
     boss1Throw: { src: 'assets/zwolfgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Gooit' },
     boss1Down: { src: 'assets/zwolfje_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Down' },
@@ -273,6 +275,9 @@ const assets = {
 
 const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hooliRun5'];
 const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThrow4', 'hooliThrow5', 'hooliThrow6'];
+const CLOWN_LOOP_KEYS = [58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80].map(n => 'clownLoop' + n);
+const CLOWN_THROW_KEYS = [19,20,21,22,23,24,25,26,27,31,32,33,34,40,55,56,57].map(n => 'clownThrow' + n);
+const CLOWN_DOWN_KEYS = ['clownDown1'].concat([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58,59,60].map(n => 'clownDown' + n));
 const SUP_ARENT_KEYS = Array.from({ length: 72 }, (_, i) => 'supA' + (i + 1));
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
 const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
@@ -298,7 +303,7 @@ const SUP_D_HIT_SCALE_Y = 1.2;
 const HOOLI_HIT_SCALE_X = 1.6;
 const HOOLI_HIT_SCALE_Y = 1.2;
 
-const bossDownMap = { boss0: 'boss0Down', boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
+const bossDownMap = { boss0: 'clownDown1', boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
 async function preload() {
     const keysList = Object.keys(assets);
@@ -440,7 +445,8 @@ function spawnBoss() {
         moveFlipTimer: 0,
 
         laneIndex: i,
-        targetX: laneCenters[i]                  // gewenste positie in beeld
+        targetX: laneCenters[i],                 // gewenste positie in beeld
+        ...(t === 'boss0' ? { animTime: 0, downAnimTime: 0 } : {})
     }));
 
     if (els.bossHealthContainer) els.bossHealthContainer.style.display = 'block';
@@ -850,6 +856,14 @@ function update(dt) {
                 }
             }
         }
+        // Clown (boss0) animatietijd voor loop / down
+        if (b.type === 'boss0') {
+            if (b.isHit) {
+                b.downAnimTime = (b.downAnimTime || 0) + 0.6;
+            } else {
+                b.animTime = (b.animTime || 0) + 0.25;
+            }
+        }
     });
     for(let i=splats.length-1; i>=0; i--) { const s = splats[i]; s.x -= currentEffectiveWorldSpeed; s.y += s.vy; s.vy += 0.5; if(s.y > VIRTUAL_HEIGHT-50) { s.y = VIRTUAL_HEIGHT-50; s.vy = 0; } s.life -= s.decay; if(s.life <= 0) splats.splice(i,1); }
     if(!bossActive && (score - levelScoreStart) >= POINTS_TO_BOSS) spawnBoss();
@@ -972,13 +986,28 @@ function render() {
             ctx.scale(-1, 1);
         }
     
-        let sk = b.isHit
-            ? bossDownMap[b.type]
-            : (b.throwVisualTimer > 0
-                ? b.type + 'Throw'
-                : (b.eatVisualTimer > 0 ? 'boss4Eat' : b.type));
+        let sk;
+        if (b.type === 'boss0') {
+            if (b.isHit) {
+                const downFrame = Math.min(Math.floor(b.downAnimTime || 0), CLOWN_DOWN_KEYS.length - 1);
+                sk = CLOWN_DOWN_KEYS[downFrame];
+            } else if (b.throwVisualTimer > 0) {
+                const throwProgress = 1 - (b.throwVisualTimer / 35);
+                const throwFrame = Math.min(Math.floor(throwProgress * CLOWN_THROW_KEYS.length), CLOWN_THROW_KEYS.length - 1);
+                sk = CLOWN_THROW_KEYS[throwFrame];
+            } else {
+                const loopFrame = Math.floor(b.animTime || 0) % CLOWN_LOOP_KEYS.length;
+                sk = CLOWN_LOOP_KEYS[loopFrame];
+            }
+        } else {
+            sk = b.isHit
+                ? bossDownMap[b.type]
+                : (b.throwVisualTimer > 0
+                    ? b.type + 'Throw'
+                    : (b.eatVisualTimer > 0 ? 'boss4Eat' : b.type));
+        }
     
-        if (assets[sk].loaded) {
+        if (assets[sk] && assets[sk].loaded) {
             const bossScale = BOSS_SCALES[b.type] ?? 1;
             const drawW = b.width * bossScale;
             const drawH = b.height * bossScale;
