@@ -277,10 +277,10 @@ const SUP_A_SCALE_X = 4;
 const SUP_A_SCALE_Y = 1.9;
 const SUP_C_SCALE_X = 1.2;
 const SUP_C_SCALE_Y = 1.2;
-const SUP_D_SCALE_X = 1;
-const SUP_D_SCALE_Y = 1; 
-const HOOLI_SCALE_X = 1;
-const HOOLI_SCALE_Y = 1;
+const SUP_D_SCALE_X = 1.2;
+const SUP_D_SCALE_Y = 1.2; 
+const HOOLI_SCALE_X = 1.2;
+const HOOLI_SCALE_Y = 1.2;
 const BOSS_SCALES = { boss1: 1, boss2: 1, boss3: 1, boss4: 1 };
 
 // --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
