@@ -210,6 +210,16 @@ const HOOLI_SCALE_X = 1;
 const HOOLI_SCALE_Y = 1;
 const BOSS_SCALES = { boss1: 1, boss2: 1, boss3: 1, boss4: 1 };
 
+// --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
+const SUP_A_HIT_SCALE_X = 1.35;
+const SUP_A_HIT_SCALE_Y = 1.35;
+const SUP_C_HIT_SCALE_X = 1.8;
+const SUP_C_HIT_SCALE_Y = 1.8;
+const SUP_D_HIT_SCALE_X = 1.0;
+const SUP_D_HIT_SCALE_Y = 1.0;
+const HOOLI_HIT_SCALE_X = 1.2;
+const HOOLI_HIT_SCALE_Y = 1.2;
+
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
 async function preload() {
@@ -826,19 +836,28 @@ function render() {
         }
     
         if (assets[sk].loaded) {
-            const hitScale = (sk === 'supCDown') ? 1.8 : (sk === 'supDDown') ? 1.2 : (sk === 'normalHit') ? 1.35 : (sk === 'hooliHit') ? 1.2 : 1;
             let sizeScaleX = 1, sizeScaleY = 1;
-            if (SUP_ARENT_KEYS.includes(sk) || (sk === 'normalHit' && t.variant === 1)) {
-                sizeScaleX = SUP_A_SCALE_X; sizeScaleY = SUP_A_SCALE_Y;
-            } else if (SUP_C_KEYS.includes(sk) || sk === 'supCDown') {
-                sizeScaleX = SUP_C_SCALE_X; sizeScaleY = SUP_C_SCALE_Y;
-            } else if (SUP_D_KEYS.includes(sk) || sk === 'supDDown') {
-                sizeScaleX = SUP_D_SCALE_X; sizeScaleY = SUP_D_SCALE_Y;
-            } else if (isHooligan) {
-                sizeScaleX = HOOLI_SCALE_X; sizeScaleY = HOOLI_SCALE_Y;
+            if (sk === 'normalHit') {
+                sizeScaleX = SUP_A_HIT_SCALE_X; sizeScaleY = SUP_A_HIT_SCALE_Y;
+            } else if (sk === 'supCDown') {
+                sizeScaleX = SUP_C_HIT_SCALE_X; sizeScaleY = SUP_C_HIT_SCALE_Y;
+            } else if (sk === 'supDDown') {
+                sizeScaleX = SUP_D_HIT_SCALE_X; sizeScaleY = SUP_D_HIT_SCALE_Y;
+            } else if (sk === 'hooliHit') {
+                sizeScaleX = HOOLI_HIT_SCALE_X; sizeScaleY = HOOLI_HIT_SCALE_Y;
+            } else {
+                if (SUP_ARENT_KEYS.includes(sk)) {
+                    sizeScaleX = SUP_A_SCALE_X; sizeScaleY = SUP_A_SCALE_Y;
+                } else if (SUP_C_KEYS.includes(sk)) {
+                    sizeScaleX = SUP_C_SCALE_X; sizeScaleY = SUP_C_SCALE_Y;
+                } else if (SUP_D_KEYS.includes(sk)) {
+                    sizeScaleX = SUP_D_SCALE_X; sizeScaleY = SUP_D_SCALE_Y;
+                } else if (isHooligan) {
+                    sizeScaleX = HOOLI_SCALE_X; sizeScaleY = HOOLI_SCALE_Y;
+                }
             }
-            const drawHalfW = halfW * hitScale * sizeScaleX;
-            const drawFullH = fullH * hitScale * sizeScaleY;
+            const drawHalfW = halfW * sizeScaleX;
+            const drawFullH = fullH * sizeScaleY;
             ctx.drawImage(
                 assets[sk].canvas,
                 -drawHalfW,
