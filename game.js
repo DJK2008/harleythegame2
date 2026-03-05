@@ -172,6 +172,8 @@ const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThr
 const SUP_ARENT_KEYS = ['supArent1', 'supArent2', 'supArent3', 'supArent4', 'supArent5'];
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
 const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
+/** Schaal voor supporter D (groen) zodat hij even groot oogt als supA/supC */
+const SUP_D_SCALE = 1.35;
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
@@ -521,11 +523,11 @@ function update(dt) {
         }
         if(hit) poops.splice(i, 1);
     }
-    // Spawn supporters / hooligans (level 1: meer normals, hoger level: meer hooligans)
+    // Spawn supporters / hooligans: gelijk aantal normale supporters (supA/supC/supD), hooligan-kans afhankelijk van level
     if (!bossActive && targets.length < 5 && Math.random() < 0.04) {
         const spawnY = VIRTUAL_HEIGHT - 200;
-        const hooliganChance = 0.12 + (currentLevel - 1) * 0.045;  // L1 ~12%, L10 ~52%
-        const isHooligan = Math.random() < Math.min(0.6, hooliganChance);
+        const hooliganChance = Math.min(0.85, 0.35 + (currentLevel - 1) * 0.055);  // L1 ~35%, L10 ~85%
+        const isHooligan = Math.random() < hooliganChance;
 
         if (isHooligan) {
             // Hooligans: verschillende ren-snelheden onderling (speedMult 0.65–1.35)
@@ -785,9 +787,10 @@ function render() {
     
         if (assets[sk].loaded) {
             // Hit-sprites (normalHit, supCDown, supDDown, hooliHit) zijn klein in de bron; schalen voor gelijke visuele grootte
-            const hitScale = (sk === 'supCDown') ? 1.8 : (sk === 'supDDown') ? 1.35 : (sk === 'normalHit') ? 1.35 : (sk === 'hooliHit') ? 1.2 : 1;
-            const drawHalfW = halfW * hitScale;
-            const drawFullH = fullH * hitScale;
+            const hitScale = (sk === 'supCDown') ? 1.8 : (sk === 'supDDown') ? 1.8 : (sk === 'normalHit') ? 1.35 : (sk === 'hooliHit') ? 1.2 : 1;
+            const runScale = SUP_D_KEYS.includes(sk) ? SUP_D_SCALE : 1;
+            const drawHalfW = halfW * hitScale * runScale;
+            const drawFullH = fullH * hitScale * runScale;
             ctx.drawImage(
                 assets[sk].canvas,
                 -drawHalfW,
