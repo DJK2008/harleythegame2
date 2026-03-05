@@ -290,7 +290,7 @@ const SUP_C_HIT_SCALE_X = 1.8;
 const SUP_C_HIT_SCALE_Y = 1.8;
 const SUP_D_HIT_SCALE_X = 1.7;
 const SUP_D_HIT_SCALE_Y = 1.2;
-const HOOLI_HIT_SCALE_X = 1.4;
+const HOOLI_HIT_SCALE_X = 1.6;
 const HOOLI_HIT_SCALE_Y = 1.2;
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
