@@ -274,7 +274,7 @@ const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 
 
 // --- Grootte/schaal per type (1 = standaard, <1 kleiner, >1 groter) ---
 const SUP_A_SCALE_X = 1.7;
-const SUP_A_SCALE_Y = 2;
+const SUP_A_SCALE_Y = 1.9;
 const SUP_C_SCALE_X = 1;
 const SUP_C_SCALE_Y = 1;
 const SUP_D_SCALE_X = 1.50;
