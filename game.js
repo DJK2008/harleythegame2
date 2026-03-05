@@ -118,16 +118,18 @@ const HOOLIGAN_SPEEDMULT_MIN = 0.65;  // minimale individuele multiplier
 const HOOLIGAN_SPEEDMULT_MAX = 1.35;  // maximale individuele multiplier
 const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 
-// Eindbazen: per type alle instellingen op één plek (hoogte, grootte, snelheid, etc.)
+// Eindbazen: per type alle instellingen op één plek (hoogte, grootte, snelheid, down-pose, etc.)
+// downScale = schaal van de down-afbeelding (1 = zelfde als staand; <1 kleiner zodat hij op beeld blijft)
+// downOffset = extra verticale verschuiving in px (positief = naar beneden, negatief = omhoog)
 const BOSS_CONFIG = {
-    boss0: { width: 250, height: 350, scale: 1.7, speed: 2.5, downOffset: 45, mirrorFlip: true },
-    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downOffset: 45, mirrorFlip: false },
-    boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downOffset: 45, mirrorFlip: false },
-    boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downOffset: 45, mirrorFlip: false },
-    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downOffset: 45, mirrorFlip: false }
+    boss0: { width: 250, height: 350, scale: 1.7, speed: 2.5, downScale: 0.32, downOffset: 0, mirrorFlip: true },
+    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
+    boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
+    boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
+    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false }
 };
 function getBossConfig(type) {
-    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downOffset: 45, mirrorFlip: false };
+    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, mirrorFlip: false };
 }
 
 // --- Spawn-verhoudingen (makkelijk aanpasbaar) ---
@@ -1043,10 +1045,13 @@ function render() {
     for (let b of activeBosses) {
         ctx.save();
         const bc = getBossConfig(b.type);
-        const drawH = b.height * bc.scale;
-        const drawW = b.width * bc.scale;
         const groundY = VIRTUAL_HEIGHT - 15;
-        const centerY = b.isHit ? groundY - bc.downOffset : groundY - drawH / 2;
+        const downScale = bc.downScale ?? 1;
+        const drawW = b.width * bc.scale * (b.isHit ? downScale : 1);
+        const drawH = b.height * bc.scale * (b.isHit ? downScale : 1);
+        const centerY = b.isHit
+            ? groundY - drawH / 2 + (bc.downOffset ?? 0)
+            : groundY - drawH / 2;
         ctx.translate(b.x + b.width / 2, centerY);
         const movingRight = (b.currentVx || 0) > 0 && !b.isHit;
         const mirror = bc.mirrorFlip ? !movingRight : movingRight;
