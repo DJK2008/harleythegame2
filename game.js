@@ -140,11 +140,14 @@ const assets = {
     eagleAnim2: { src: 'assets/eagle_animatie_2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 2' },
     eagleAnim3: { src: 'assets/eagle_animatie_3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 3' },
     eagleAnim4: { src: 'assets/eagle_animatie_4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Adelaar anim 4' },
-    supArent1: { src: 'assets/supA/supArent1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1 run 1' },
-    supArent2: { src: 'assets/supA/supArent2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1 run 2' },
-    supArent3: { src: 'assets/supA/supArent3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1 run 3' },
-    supArent4: { src: 'assets/supA/supArent4.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1 run 4' },
-    supArent5: { src: 'assets/supA/supArent5.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter 1 run 5' },
+    supA1: { src: 'assets/supA/Running_strictly_preserve_the_blue_and_white-1 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 1' },
+    supA2: { src: 'assets/supA/Running_strictly_preserve_the_blue_and_white-2 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 2' },
+    supA3: { src: 'assets/supA/Running_strictly_preserve_the_blue_and_white-3 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 3' },
+    supA4: { src: 'assets/supA/Running_strictly_preserve_the_blue_and_white-4 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 4' },
+    supA5: { src: 'assets/supA/Running_strictly_preserve_the_blue_and_white-5 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 5' },
+    supA6: { src: 'assets/supA/Running_strictly_preserve_the_blue_and_white-6 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 6' },
+    supA7: { src: 'assets/supA/Running_strictly_preserve_the_blue_and_white-7 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 7' },
+    supA8: { src: 'assets/supA/Running_strictly_preserve_the_blue_and_white-8 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 8' },
     supC1: { src: 'assets/supC/supC1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 1' },
     supC2: { src: 'assets/supC/supC2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 2' },
     supC3: { src: 'assets/supC/supC3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 3' },
@@ -192,7 +195,7 @@ const assets = {
 
 const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hooliRun5'];
 const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThrow4', 'hooliThrow5', 'hooliThrow6'];
-const SUP_ARENT_KEYS = ['supArent1', 'supArent2', 'supArent3', 'supArent4', 'supArent5'];
+const SUP_ARENT_KEYS = ['supA1', 'supA2', 'supA3', 'supA4', 'supA5', 'supA6', 'supA7', 'supA8'];
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
 const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
 /** Supporter D (groen): breedte en hoogte apart (breder, minder lang) */
@@ -591,7 +594,7 @@ function update(dt) {
                 variant,
                 hitTime: 0,
                 throwTimer: 0,
-                ...((variant === 1 || variant === 3 || variant === 4) && { animTime: Math.random() * (variant === 3 ? 3 : variant === 4 ? 9 : 5), animSpeed: variant === 3 ? 0.08 : variant === 4 ? 0.12 : 0.12 })
+                ...((variant === 1 || variant === 3 || variant === 4) && { animTime: Math.random() * (variant === 3 ? 3 : variant === 4 ? 9 : 8), animSpeed: variant === 3 ? 0.08 : variant === 4 ? 0.12 : 0.12 })
             });
         }
     }
