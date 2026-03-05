@@ -291,7 +291,7 @@ const SUP_D_SCALE_X = 1.7;
 const SUP_D_SCALE_Y = 1.2; 
 const HOOLI_SCALE_X = 1.2;
 const HOOLI_SCALE_Y = 1.2;
-const BOSS_SCALES = { boss0: 1, boss1: 1, boss2: 1, boss3: 1, boss4: 1 };
+const BOSS_SCALES = { boss0: 1.9, boss1: 1, boss2: 1, boss3: 1, boss4: 1 };
 
 // --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
 const SUP_A_HIT_SCALE_X = 1.35;
@@ -922,10 +922,11 @@ function update(dt) {
                 }
             }
         }
-        // Clown (boss0) animatietijd voor loop / down
+        // Clown (boss0) animatietijd voor loop / down; eenmaal down blijft op laatste frame liggen
         if (b.type === 'boss0') {
             if (b.isHit) {
-                b.downAnimTime = (b.downAnimTime || 0) + 0.6;
+                const maxDown = CLOWN_DOWN_KEYS.length;
+                b.downAnimTime = Math.min((b.downAnimTime || 0) + 0.6, maxDown);
             } else {
                 b.animTime = (b.animTime || 0) + 0.25;
             }
@@ -1036,21 +1037,19 @@ function render() {
     }
     for (let b of activeBosses) {
         ctx.save();
+        const bossScale = BOSS_SCALES[b.type] ?? 1;
+        const drawH = b.height * bossScale;
+        const drawW = b.width * bossScale;
+        // Voeten op de stoep (VIRTUAL_HEIGHT - 50); staand: onderkant sprite op stoep; down: liggend op stoep
+        const groundY = VIRTUAL_HEIGHT - 50;
+        const centerY = b.isHit ? groundY - 45 : groundY - drawH / 2;
+        ctx.translate(b.x + b.width / 2, centerY);
     
-        // Centreer op de baas
-        ctx.translate(
-            b.x + b.width / 2,
-            b.isHit ? VIRTUAL_HEIGHT - 50 - 45 : b.y + b.height / 2 - 35
-        );
-    
-        // Bepaal looprichting op basis van currentVx
-        // (negatief = naar links, positief = naar rechts)
+        // Bepaal looprichting op basis van currentVx (negatief = links, positief = rechts)
         const movingRight = (b.currentVx || 0) > 0 && !b.isHit;
-    
-        if (movingRight) {
-            // Spiegel horizontaal rond het midden
-            ctx.scale(-1, 1);
-        }
+        // Clown-sprites kijken standaard de andere kant op dan andere bazen
+        const mirror = b.type === 'boss0' ? !movingRight : movingRight;
+        if (mirror) ctx.scale(-1, 1);
     
         let sk;
         if (b.type === 'boss0') {
@@ -1077,9 +1076,6 @@ function render() {
         }
     
         if (assets[sk] && assets[sk].loaded) {
-            const bossScale = BOSS_SCALES[b.type] ?? 1;
-            const drawW = b.width * bossScale;
-            const drawH = b.height * bossScale;
             drawTinted(
                 assets[sk].canvas,
                 -drawW / 2,
