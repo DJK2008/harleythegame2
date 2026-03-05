@@ -196,7 +196,7 @@ const SUP_ARENT_KEYS = ['supArent1', 'supArent2', 'supArent3', 'supArent4', 'sup
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
 const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
 /** Supporter D (groen): breedte en hoogte apart (breder, minder lang) */
-const SUP_D_SCALE_X = 1.25;
+const SUP_D_SCALE_X = 1.50;
 const SUP_D_SCALE_Y = 1.05;
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
