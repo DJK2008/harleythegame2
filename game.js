@@ -259,7 +259,7 @@ const assets = {
     boss0: { src: encodeURI('assets/clown/clownloopt/clownog-58 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, name: "Clown", label: 'Boss 0 (Clown)' },
     ...Object.fromEntries([58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80].map(n => ['clownLoop' + n, { src: encodeURI(`assets/clown/clownloopt/clownog-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Clown loop ' + n }])),
     ...Object.fromEntries([19,20,21,22,23,24,25,26,27,31,32,33,34,40,55,56,57].map(n => ['clownThrow' + n, { src: encodeURI(`assets/clown/clowngooit/clownog-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Clown gooit ' + n }])),
-    ...Object.fromEntries([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58,59,60].map(n => ['clownDown' + n, { src: encodeURI(`assets/clown/clowndown/ezgif-189454d3ff861def-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Clown down ' + n }])),
+    ...Object.fromEntries([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58].map(n => ['clownDown' + n, { src: encodeURI(`assets/clown/clowndown/ezgif-189454d3ff861def-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Clown down ' + n }])),
     clownDown1: { src: encodeURI('assets/clown/clowndown/ezgif-189454d3ff861def-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Clown down 1' },
     boss1: { src: 'assets/masc_rent.png', canvas: document.createElement('canvas'), loaded: false, name: "Zwolfje", label: 'Boss 1' },
     boss1Throw: { src: 'assets/zwolfgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Gooit' },
@@ -280,7 +280,7 @@ const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hoo
 const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThrow4', 'hooliThrow5', 'hooliThrow6'];
 const CLOWN_LOOP_KEYS = [58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80].map(n => 'clownLoop' + n);
 const CLOWN_THROW_KEYS = [19,20,21,22,23,24,25,26,27,31,32,33,34,40,55,56,57].map(n => 'clownThrow' + n);
-const CLOWN_DOWN_KEYS = ['clownDown1'].concat([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58,59,60].map(n => 'clownDown' + n));
+const CLOWN_DOWN_KEYS = ['clownDown1'].concat([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58].map(n => 'clownDown' + n));
 const SUP_ARENT_KEYS = Array.from({ length: 72 }, (_, i) => 'supA' + (i + 1));
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
 const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
