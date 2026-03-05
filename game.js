@@ -291,7 +291,7 @@ const SUP_D_SCALE_X = 1.7;
 const SUP_D_SCALE_Y = 1.2; 
 const HOOLI_SCALE_X = 1.2;
 const HOOLI_SCALE_Y = 1.2;
-const BOSS_SCALES = { boss0: 1.9, boss1: 1, boss2: 1, boss3: 1, boss4: 1 };
+const BOSS_SCALES = { boss0: 1.7, boss1: 1, boss2: 1, boss3: 1, boss4: 1 };
 
 // --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
 const SUP_A_HIT_SCALE_X = 1.35;
@@ -1041,7 +1041,7 @@ function render() {
         const drawH = b.height * bossScale;
         const drawW = b.width * bossScale;
         // Voeten op de stoep (VIRTUAL_HEIGHT - 50); staand: onderkant sprite op stoep; down: liggend op stoep
-        const groundY = VIRTUAL_HEIGHT - 50;
+        const groundY = VIRTUAL_HEIGHT - 90;
         const centerY = b.isHit ? groundY - 45 : groundY - drawH / 2;
         ctx.translate(b.x + b.width / 2, centerY);
     
