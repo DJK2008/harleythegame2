@@ -172,8 +172,9 @@ const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThr
 const SUP_ARENT_KEYS = ['supArent1', 'supArent2', 'supArent3', 'supArent4', 'supArent5'];
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
 const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
-/** Schaal voor supporter D (groen) zodat hij even groot oogt als supA/supC */
-const SUP_D_SCALE = 1.35;
+/** Supporter D (groen): breedte en hoogte apart (breder, minder lang) */
+const SUP_D_SCALE_X = 1.25;
+const SUP_D_SCALE_Y = 1.05;
 
 const bossDownMap = { boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 
@@ -788,9 +789,11 @@ function render() {
         if (assets[sk].loaded) {
             // Hit-sprites (normalHit, supCDown, supDDown, hooliHit) zijn klein in de bron; schalen voor gelijke visuele grootte
             const hitScale = (sk === 'supCDown') ? 1.8 : (sk === 'supDDown') ? 1.8 : (sk === 'normalHit') ? 1.35 : (sk === 'hooliHit') ? 1.2 : 1;
-            const runScale = SUP_D_KEYS.includes(sk) ? SUP_D_SCALE : 1;
-            const drawHalfW = halfW * hitScale * runScale;
-            const drawFullH = fullH * hitScale * runScale;
+            const isSupD = SUP_D_KEYS.includes(sk) || sk === 'supDDown';
+            const scaleX = isSupD ? SUP_D_SCALE_X : 1;
+            const scaleY = isSupD ? SUP_D_SCALE_Y : 1;
+            const drawHalfW = halfW * hitScale * scaleX;
+            const drawFullH = fullH * hitScale * scaleY;
             ctx.drawImage(
                 assets[sk].canvas,
                 -drawHalfW,
