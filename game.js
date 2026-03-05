@@ -102,6 +102,29 @@ const levelBossConfig = {
     8:['boss1','boss4','boss3'], 9:['boss2','boss3','boss4'], 10:['boss1','boss2','boss3','boss4']
 };
 
+// --- Snelheid-instellingen (makkelijk aanpasbaar) ---
+// Normale supporters (A, C en D)
+const SUP_NORMAL_BASE_SPEED = 5;      // basissnelheid
+const SUP_NORMAL_SPEED_RANGE = 6;     // extra random snelheid (0..range)
+const SUP_A_SPEED_MULT = 1.0;         // factor voor supporter A (variant 1)
+const SUP_C_SPEED_MULT = 1.0;         // factor voor supporter C (variant 3)
+const SUP_D_SPEED_MULT = 1.25;        // factor voor supporter D (variant 4) – iets sneller
+
+// Hooligans
+const HOOLIGAN_BASE_SPEED = 4;        // basissnelheid
+const HOOLIGAN_SPEED_RANGE = 2;       // extra random snelheid (0..range)
+const HOOLIGAN_SPEEDMULT_MIN = 0.65;  // minimale individuele multiplier
+const HOOLIGAN_SPEEDMULT_MAX = 1.35;  // maximale individuele multiplier
+const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
+
+// Eindbazen (per type een eigen loopsnelheid)
+const BOSS_SPEEDS = {
+    boss1: 2.5,
+    boss2: 2.5,
+    boss3: 2.5,
+    boss4: 2.5
+};
+
 const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level3', 8: 'bg_level2', 9: 'bg_level1', 10: 'background' };
 
 const assets = {
@@ -305,8 +328,8 @@ function spawnBoss() {
         height: 350,
         hp: (25 + currentLevel * 5) / (cfg.length * 0.8),
         maxHp: (25 + currentLevel * 5) / (cfg.length * 0.8),
-        speed: 2.5,
-        currentVx: -2.5,
+        speed: BOSS_SPEEDS[t] ?? 2.5,
+        currentVx: -(BOSS_SPEEDS[t] ?? 2.5),
         vxTimer: 0,
         isHit: false,
         hitFlash: 0,
@@ -531,15 +554,15 @@ function update(dt) {
         const isHooligan = Math.random() < hooliganChance;
 
         if (isHooligan) {
-            // Hooligans: verschillende ren-snelheden onderling (speedMult 0.65–1.35)
-            const speedMult = 0.65 + Math.random() * 0.7;
+            // Hooligans: verschillende ren-snelheden onderling (instelbaar via HOOLIGAN_* constanten)
+            const speedMult = HOOLIGAN_SPEEDMULT_MIN + Math.random() * (HOOLIGAN_SPEEDMULT_MAX - HOOLIGAN_SPEEDMULT_MIN);
             targets.push({
                 type: 'hooligan',
                 x: -160,
                 y: spawnY,
-                speed: 4 + Math.random() * 2,
+                speed: HOOLIGAN_BASE_SPEED + Math.random() * HOOLIGAN_SPEED_RANGE,
                 speedMult,
-                vx: (BASE_WORLD_SPEED + 6) * speedMult,
+                vx: (BASE_WORLD_SPEED + HOOLIGAN_VX_WORLD_OFFSET) * speedMult,
                 wanderTimer: 0,
                 isHit: false,
                 variant: 1,
@@ -554,11 +577,16 @@ function update(dt) {
         } else {
             // Normale supporters: supA (1), supC (3) of supD/groen (4)
             const variant = [1, 3, 4][Math.floor(Math.random() * 3)];
+            const baseSpeed = SUP_NORMAL_BASE_SPEED + Math.random() * SUP_NORMAL_SPEED_RANGE;
+            const speedMult =
+                variant === 1 ? SUP_A_SPEED_MULT :
+                variant === 3 ? SUP_C_SPEED_MULT :
+                SUP_D_SPEED_MULT;
             targets.push({
                 type: 'normal',
                 x: -160,
                 y: spawnY,
-                speed: 5 + Math.random() * 6,
+                speed: baseSpeed * speedMult,
                 isHit: false,
                 variant,
                 hitTime: 0,
