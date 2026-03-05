@@ -687,7 +687,7 @@ function update(dt) {
                 variant,
                 hitTime: 0,
                 throwTimer: 0,
-                ...((variant === 1 || variant === 3 || variant === 4) && { animTime: Math.random() * (variant === 3 ? 3 : variant === 4 ? 9 : 72), animSpeed: variant === 3 ? 0.08 : variant === 4 ? 0.12 : 1.0 })
+                ...((variant === 1 || variant === 3 || variant === 4) && { animTime: Math.random() * (variant === 3 ? 3 : variant === 4 ? 9 : 72), animSpeed: variant === 3 ? 0.08 : variant === 4 ? 0.12 : 0.2 })
             });
         }
     }
