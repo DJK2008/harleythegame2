@@ -124,16 +124,16 @@ const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 
 // Eindbazen: per type alle instellingen op één plek (hoogte, grootte, snelheid, down-pose, etc.)
 // downScale = schaal van de down-afbeelding (1 = zelfde als staand; <1 kleiner zodat hij op beeld blijft)
-// downOffset = extra verticale verschuiving in px (positief = naar beneden, negatief = omhoog)
+// downOffset = verticale verschuiving down-pose (positief = naar beneden). offset = idem voor staande pose
 const BOSS_CONFIG = {
-    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1.1, downOffset: 0, mirrorFlip: true },
-    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: true },
-    boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
-    boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
-    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false }
+    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 1,    downOffset: 0, offset: 60, mirrorFlip: true },
+    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: true },
+    boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false },
+    boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false },
+    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false }
 };
 function getBossConfig(type) {
-    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, mirrorFlip: false };
+    return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false };
 }
 
 // --- Spawn-verhoudingen (makkelijk aanpasbaar) ---
@@ -1075,7 +1075,7 @@ function render() {
         const drawH = b.height * bc.scale * (b.isHit ? downScale : 1);
         const centerY = b.isHit
             ? groundY - drawH / 2 + (bc.downOffset ?? 0)
-            : groundY - drawH / 2;
+            : groundY - drawH / 2 + (bc.offset ?? 0);
         ctx.translate(b.x + b.width / 2, centerY);
         const movingRight = (b.currentVx || 0) > 0 && !b.isHit;
         const mirror = bc.mirrorFlip ? !movingRight : movingRight;
