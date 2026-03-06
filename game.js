@@ -127,7 +127,7 @@ const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 // downOffset = extra verticale verschuiving in px (positief = naar beneden, negatief = omhoog)
 const BOSS_CONFIG = {
     boss0: { width: 250, height: 350, scale: 1.7, speed: 2.5, downScale: 1.1, downOffset: 0, mirrorFlip: true },
-    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
+    boss1: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: true },
     boss2: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
     boss3: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false },
     boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, mirrorFlip: false }
@@ -935,7 +935,7 @@ function update(dt) {
                     ? 'GLOVE'
                     : (b.type === 'boss3'
                         ? 'BALL'
-                        : (b.type === 'boss4' ? 'HAMBURGER' : 'STONE'));
+                        : (b.type === 'boss4' ? 'HAMBURGER' : (b.type === 'boss1' ? 'BRICK' : 'STONE')));
     
                 if (!b.eatVisualTimer || b.eatVisualTimer <= 0) {
                     beerGlasses.push({
@@ -1133,7 +1133,7 @@ function render() {
     
         ctx.restore();
     }
-    for(let bg of beerGlasses) { ctx.font = '24px Arial'; ctx.textAlign = 'center'; ctx.fillText(bg.type === 'GLOVE' ? '🧤' : (bg.type === 'BALL' ? '⚽' : (bg.type === 'HAMBURGER' ? '🍔' : '🪨')), bg.x, bg.y); }
+    for(let bg of beerGlasses) { ctx.font = '24px Arial'; ctx.textAlign = 'center'; ctx.fillText(bg.type === 'GLOVE' ? '🧤' : (bg.type === 'BALL' ? '⚽' : (bg.type === 'HAMBURGER' ? '🍔' : (bg.type === 'BRICK' ? '🧱' : '🪨'))), bg.x, bg.y); }
 
     const t = Date.now() * 0.001;
     for (const p of powerUps) {
