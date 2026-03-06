@@ -63,6 +63,7 @@ let gameActive = false;
 let animationFrameId = null;
 
 let joystickActive = false;
+let joystickPointerId = null;
 const keys = {};
 
 let currentLevel = 1;
@@ -1162,24 +1163,27 @@ const moveJoystick = (input) => {
     player.dx = Math.cos(a) * (m/50) * player.speed; player.dy = Math.sin(a) * (m/50) * player.speed;
     if(player.dx !== 0) player.facing = player.dx > 0 ? 1 : -1;
 };
-const endJoystick = () => {
+const endJoystick = (pointerId) => {
+    if (pointerId != null && pointerId !== joystickPointerId) return;
     joystickActive = false;
+    joystickPointerId = null;
     if (els.joystickKnob) els.joystickKnob.style.transform = 'translate(0,0)';
     player.dx = 0; player.dy = 0;
 };
 
-// Pointer Events (prevents double-triggering click+touch)
+// Pointer Events: alleen de vinger op de joystick bestuurt; andere vingers kunnen knoppen gebruiken
 if (els.joystickContainer) {
     els.joystickContainer.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
         joystickActive = true;
+        joystickPointerId = e.pointerId;
         els.joystickContainer.setPointerCapture?.(e.pointerId);
         moveJoystick(e);
-        e.preventDefault();
     }, { passive: false });
 }
-window.addEventListener('pointermove', (e) => { if (joystickActive) moveJoystick(e); });
-window.addEventListener('pointerup', endJoystick);
-window.addEventListener('pointercancel', endJoystick);
+window.addEventListener('pointermove', (e) => { if (joystickActive && e.pointerId === joystickPointerId) moveJoystick(e); });
+window.addEventListener('pointerup', (e) => endJoystick(e.pointerId));
+window.addEventListener('pointercancel', (e) => endJoystick(e.pointerId));
 
 let lastTouchTs = 0;
 window.addEventListener('touchstart', () => { lastTouchTs = Date.now(); }, { passive: true });
