@@ -267,9 +267,9 @@ const assets = {
     ...Object.fromEntries([19,20,21,22,23,24,25,26,27,31,32,33,34,40,55,56,57].map(n => ['clownThrow' + n, { src: encodeURI(`assets/clown/clowngooit/clownog-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Clown gooit ' + n }])),
     ...Object.fromEntries([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58].map(n => ['clownDown' + n, { src: encodeURI(`assets/clown/clowndown/ezgif-189454d3ff861def-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Clown down ' + n }])),
     clownDown1: { src: encodeURI('assets/clown/clowndown/ezgif-189454d3ff861def-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Clown down 1' },
-    boss1: { src: 'assets/masc_rent.png', canvas: document.createElement('canvas'), loaded: false, name: "Zwolfje", label: 'Boss 1' },
-    boss1Throw: { src: 'assets/zwolfgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Gooit' },
-    boss1Down: { src: 'assets/zwolfje_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 1 Down' },
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12].map(n => ['zwolfRun' + n, { src: encodeURI(`assets/zwolfje/rennen/Laat_hem_bakstenen_omhoog_gooien (1)-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Zwolfje ren ' + n }])),
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map(n => ['zwolfThrow' + n, { src: encodeURI(`assets/zwolfje/gooien/Laat_hem_bakstenen_omhoog_gooien-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Zwolfje gooit ' + n }])),
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33].map(n => ['zwolfDown' + n, { src: encodeURI(`assets/zwolfje/down/Hij_wordt_geraakt_door_vogelpoep_valt_op_de-${n} (gesleept).png`), canvas: document.createElement('canvas'), loaded: false, label: 'Zwolfje down ' + n }])),
     boss2: { src: 'assets/boer1.png', canvas: document.createElement('canvas'), loaded: false, name: "Diederik", label: 'Boss 2' },
     boss2Throw: { src: 'assets/diedgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Gooit' },
     boss2Down: { src: 'assets/boer down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 2 Down' },
@@ -287,6 +287,9 @@ const HOOLI_THROW_KEYS = ['hooliThrow1', 'hooliThrow2', 'hooliThrow3', 'hooliThr
 const CLOWN_LOOP_KEYS = [58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80].map(n => 'clownLoop' + n);
 const CLOWN_THROW_KEYS = [19,20,21,22,23,24,25,26,27,31,32,33,34,40,55,56,57].map(n => 'clownThrow' + n);
 const CLOWN_DOWN_KEYS = ['clownDown1'].concat([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,27,31,32,33,34,35,36,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,56,58].map(n => 'clownDown' + n));
+const ZWOLF_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'zwolfRun' + n);
+const ZWOLF_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map(n => 'zwolfThrow' + n);
+const ZWOLF_DOWN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33].map(n => 'zwolfDown' + n);
 const SUP_ARENT_KEYS = Array.from({ length: 72 }, (_, i) => 'supA' + (i + 1));
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
 const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
@@ -311,12 +314,13 @@ const SUP_D_HIT_SCALE_Y = 1.2;
 const HOOLI_HIT_SCALE_X = 1.6;
 const HOOLI_HIT_SCALE_Y = 1.2;
 
-const bossDownMap = { boss0: 'clownDown1', boss1: 'boss1Down', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
+const bossDownMap = { boss0: 'clownDown1', boss1: 'zwolfDown1', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
+const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3: 'Bram', boss4: 'Dominguez' };
 
 // Level-specifieke assets: per level de bg + alle bazen van dat level
 const BOSS_ASSET_KEYS = {
     boss0: ['boss0', ...CLOWN_LOOP_KEYS, ...CLOWN_THROW_KEYS, ...CLOWN_DOWN_KEYS],
-    boss1: ['boss1', 'boss1Throw', 'boss1Down'],
+    boss1: [...ZWOLF_RUN_KEYS, ...ZWOLF_THROW_KEYS, ...ZWOLF_DOWN_KEYS],
     boss2: ['boss2', 'boss2Throw', 'boss2Down'],
     boss3: ['boss3', 'boss3Throw', 'boss3Down'],
     boss4: ['boss4', 'boss4Throw', 'boss4Eat', 'boss4Down']
@@ -341,7 +345,7 @@ function loadAsset(key, options = {}) {
     return new Promise((resolve) => {
         const img = new Image();
         if (item.src.startsWith('http')) img.crossOrigin = 'anonymous';
-        const silent = silentFail || key.startsWith('clownLoop') || key.startsWith('clownThrow') || key.startsWith('clownDown');
+        const silent = silentFail || key.startsWith('clownLoop') || key.startsWith('clownThrow') || key.startsWith('clownDown') || key.startsWith('zwolfRun') || key.startsWith('zwolfThrow') || key.startsWith('zwolfDown');
         const timeout = setTimeout(() => {
             item.loaded = false;
             if (!silent) addFailedAsset(item.label);
@@ -533,7 +537,7 @@ function spawnBoss() {
 
         laneIndex: i,
         targetX: laneCenters[i],
-        ...(t === 'boss0' ? { animTime: 0, downAnimTime: 0 } : {})
+        ...(t === 'boss0' || t === 'boss1' ? { animTime: 0, downAnimTime: 0 } : {})
     };
     });
 
@@ -545,7 +549,7 @@ function showLevelUp() {
     gameActive = false; levelAudio.pause(); levelAudio.currentTime = 0;
     winAudio.play().catch(() => {});
     const cfg = levelBossConfig[currentLevel];
-    if (els.levelUpText) els.levelUpText.innerText = cfg.map(c => assets[c].name).join(" en ") + " verslagen.";
+    if (els.levelUpText) els.levelUpText.innerText = cfg.map(c => (assets[c] && assets[c].name) || BOSS_NAMES[c] || c).join(" en ") + " verslagen.";
     const container = els.bossSummaryContainer;
     if (container) container.innerHTML = '';
     cfg.forEach(c => {
@@ -944,13 +948,18 @@ function update(dt) {
                 }
             }
         }
-        // Clown (boss0) animatietijd voor loop / down; eenmaal down blijft op laatste frame liggen
+        // Clown (boss0) en Zwolfje (boss1) animatietijd voor loop / down; eenmaal down op laatste frame
         if (b.type === 'boss0') {
             if (b.isHit) {
-                const maxDown = CLOWN_DOWN_KEYS.length;
-                b.downAnimTime = Math.min((b.downAnimTime || 0) + 0.6, maxDown);
+                b.downAnimTime = Math.min((b.downAnimTime || 0) + 0.6, CLOWN_DOWN_KEYS.length);
             } else {
                 b.animTime = (b.animTime || 0) + 0.25;
+            }
+        } else if (b.type === 'boss1') {
+            if (b.isHit) {
+                b.downAnimTime = Math.min((b.downAnimTime || 0) + 0.5, ZWOLF_DOWN_KEYS.length);
+            } else {
+                b.animTime = (b.animTime || 0) + 0.3;
             }
         }
     });
@@ -1087,6 +1096,21 @@ function render() {
             }
             if (!assets[sk] || !assets[sk].loaded) {
                 sk = b.isHit ? CLOWN_DOWN_KEYS[0] : (b.throwVisualTimer > 0 ? CLOWN_THROW_KEYS[0] : CLOWN_LOOP_KEYS[0]);
+            }
+        } else if (b.type === 'boss1') {
+            if (b.isHit) {
+                const downFrame = Math.min(Math.floor(b.downAnimTime || 0), ZWOLF_DOWN_KEYS.length - 1);
+                sk = ZWOLF_DOWN_KEYS[downFrame];
+            } else if (b.throwVisualTimer > 0) {
+                const throwProgress = 1 - (b.throwVisualTimer / 35);
+                const throwFrame = Math.min(Math.floor(throwProgress * ZWOLF_THROW_KEYS.length), ZWOLF_THROW_KEYS.length - 1);
+                sk = ZWOLF_THROW_KEYS[throwFrame];
+            } else {
+                const loopFrame = Math.floor(b.animTime || 0) % ZWOLF_RUN_KEYS.length;
+                sk = ZWOLF_RUN_KEYS[loopFrame];
+            }
+            if (!assets[sk] || !assets[sk].loaded) {
+                sk = b.isHit ? ZWOLF_DOWN_KEYS[0] : (b.throwVisualTimer > 0 ? ZWOLF_THROW_KEYS[0] : ZWOLF_RUN_KEYS[0]);
             }
         } else {
             sk = b.isHit
