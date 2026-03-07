@@ -8,6 +8,11 @@ const LEVEL_WIN_AUDIO_URL = 'audio/forza eagles.wav';
 const LEVEL_GAMEOVER_AUDIO_URL = 'audio/always look.wav';
 const SOUND_EAGLE_URL = 'assets/soundeffects/eagle.mp3';
 const SOUND_POOP_URL = 'assets/soundeffects/schijt1.mp3';
+
+// Volume 0–1: achtergrondmuziek en sound effects (hier makkelijk in te stellen)
+const VOLUME_MUSIC = 0.2;
+const VOLUME_SFX = 1;
+
 const VIRTUAL_HEIGHT = 1080;
 const VIRTUAL_WIDTH = 1920;
 const POINTS_TO_BOSS = 2500;
@@ -58,10 +63,15 @@ const bgImg = new Image();
    
 const levelAudio = new Audio(LEVEL_START_AUDIO_URL);
 levelAudio.loop = true;
+levelAudio.volume = VOLUME_MUSIC;
 const winAudio = new Audio(LEVEL_WIN_AUDIO_URL);
+winAudio.volume = VOLUME_MUSIC;
 const gameOverAudio = new Audio(LEVEL_GAMEOVER_AUDIO_URL);
+gameOverAudio.volume = VOLUME_MUSIC;
 const soundEagle = new Audio(SOUND_EAGLE_URL);
-const soundPoop = new Audio(SOUND_POOP_URL); 
+soundEagle.volume = VOLUME_SFX;
+const soundPoop = new Audio(SOUND_POOP_URL);
+soundPoop.volume = VOLUME_SFX; 
 
 // --- 2. STATE ---
 let gameScale = 1;
