@@ -610,10 +610,7 @@ function createSplat(x, y, radius, type) {
 function executePoop(type) {
     if(!gameActive || player.isDead) return;
     soundPoop.currentTime = 0;
-    const wasPlaying = !levelAudio.paused;
-    if (wasPlaying) levelAudio.pause();
-    soundPoop.play().catch(() => { if (wasPlaying) levelAudio.play().catch(() => {}); });
-    soundPoop.addEventListener('ended', () => { if (wasPlaying) levelAudio.play().catch(() => {}); }, { once: true });
+    soundPoop.play().catch(() => {});
     const px = player.x + 110, py = player.y + 80;
     if(type === 'DIARREE') {
         for(let i=0; i<4; i++) setTimeout(() => poops.push({ x: px, y: py, radius: 8, speedY: 18, speedX: (i-1.5)*4, type:'NORMAL' }), i * 60);
@@ -704,10 +701,7 @@ function update(dt) {
         eagleSoundTimer = 0;
         nextEagleDelay = 20000 + Math.random() * 30000;
         soundEagle.currentTime = 0;
-        const wasPlaying = !levelAudio.paused;
-        if (wasPlaying) levelAudio.pause();
-        soundEagle.play().catch(() => { if (wasPlaying) levelAudio.play().catch(() => {}); });
-        soundEagle.addEventListener('ended', () => { if (wasPlaying) levelAudio.play().catch(() => {}); }, { once: true });
+        soundEagle.play().catch(() => {});
     }
     let worldSpeedFactor = (player.dx < 0) ? 0.3 : 1.0;
     const allBossesDefeated = activeBosses.length > 0 && activeBosses.every(b => b.isHit);
