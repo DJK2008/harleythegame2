@@ -157,7 +157,7 @@ const levelBossConfig = {
 const SUP_NORMAL_BASE_SPEED = 8;      // basissnelheid
 const SUP_NORMAL_SPEED_RANGE = 4;     // extra random snelheid (0..range)
 const SUP_A_SPEED_MULT = 0.8;         // factor voor supporter A (variant 1)
-const SUP_B_SPEED_MULT = 0.75;        // factor voor supporter B (variant 2)
+const SUP_B_SPEED_MULT = 0.77;        // factor voor supporter B (variant 2)
 const SUP_C_SPEED_MULT = 1.0;         // factor voor supporter C (variant 3)
 const SUP_D_SPEED_MULT = 1.25;        // factor voor supporter D (variant 4) – iets sneller
 
@@ -360,7 +360,7 @@ const HOOLI_SCALE_Y = 1.2;
 // --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
 const SUP_A_HIT_SCALE_X = 1.35;
 const SUP_A_HIT_SCALE_Y = 1.35;
-const SUP_B_HIT_SCALE_X = 1.9;
+const SUP_B_HIT_SCALE_X = 2.1;
 const SUP_B_HIT_SCALE_Y = 1.35;
 const SUP_C_HIT_SCALE_X = 2.0;
 const SUP_C_HIT_SCALE_Y = 1.8;
