@@ -858,7 +858,7 @@ function update(dt) {
                 variant === 3 ? SUP_C_SPEED_MULT :
                 SUP_D_SPEED_MULT;
             const animFrames = variant === 1 ? 72 : variant === 2 ? 28 : variant === 3 ? 96 : 9;
-            const animSpd = variant === 3 ? 0.25 : variant === 4 ? 0.12 : variant === 2 ? 0.12 : 0.2;
+            const animSpd = variant === 3 ? 0.2 : variant === 4 ? 0.12 : variant === 2 ? 0.12 : 0.2;
             targets.push({
                 type: 'normal',
                 x: -160,
@@ -1068,6 +1068,15 @@ function update(dt) {
     if(!bossActive && (score - levelScoreStart) >= POINTS_TO_BOSS) spawnBoss();
 }
 
+function findNearestLoadedFrame(keys, index) {
+    if (assets[keys[index]]?.loaded) return keys[index];
+    for (let d = 1; d < keys.length; d++) {
+        if (index - d >= 0 && assets[keys[index - d]]?.loaded) return keys[index - d];
+        if (index + d < keys.length && assets[keys[index + d]]?.loaded) return keys[index + d];
+    }
+    return keys.find(k => assets[k]?.loaded) || keys[index];
+}
+
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save(); ctx.scale(gameScale, gameScale);
@@ -1137,7 +1146,8 @@ function render() {
             drawSk = SUP_B_KEYS.find(k => assets[k].loaded) || sk;
         }
         if (!assets[drawSk]?.loaded && SUP_C_KEYS.includes(sk)) {
-            drawSk = SUP_C_KEYS.find(k => assets[k].loaded) || sk;
+            const frameIndex = Math.floor(t.animTime || 0) % SUP_C_KEYS.length;
+            drawSk = findNearestLoadedFrame(SUP_C_KEYS, frameIndex);
         }
         if (assets[drawSk].loaded) {
             let sizeScaleX = 1, sizeScaleY = 1;
