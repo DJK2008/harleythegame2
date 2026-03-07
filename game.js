@@ -153,10 +153,11 @@ const levelBossConfig = {
 };
 
 // --- Snelheid-instellingen (makkelijk aanpasbaar) ---
-// Normale supporters (A, C en D)
+// Normale supporters (A, B, C en D)
 const SUP_NORMAL_BASE_SPEED = 8;      // basissnelheid
 const SUP_NORMAL_SPEED_RANGE = 4;     // extra random snelheid (0..range)
 const SUP_A_SPEED_MULT = 0.8;         // factor voor supporter A (variant 1)
+const SUP_B_SPEED_MULT = 0.75;        // factor voor supporter B (variant 2)
 const SUP_C_SPEED_MULT = 1.0;         // factor voor supporter C (variant 3)
 const SUP_D_SPEED_MULT = 1.25;        // factor voor supporter D (variant 4) – iets sneller
 
@@ -186,10 +187,11 @@ function getBossConfig(type) {
 // Normaal vs hooligan: L1 = 80% normaal / 20% hooligan; hoger level = meer hooligans
 const HOOLIGAN_CHANCE_LEVEL1 = 0.2;   // kans hooligan op level 1 (0.2 = 20% hooligan, 80% normaal)
 const HOOLIGAN_CHANCE_MAX = 0.85;     // max kans hooligan op hogere levels
-// Verhouding onder normale supporters: gewichten A : C : D (bijv. 80 : 20 : 20 → ~67% A, ~17% C, ~17% D)
-const SUP_A_SPAWN_WEIGHT = 33;
-const SUP_C_SPAWN_WEIGHT = 34;
-const SUP_D_SPAWN_WEIGHT = 33;
+// Verhouding onder normale supporters: gewichten A : B : C : D
+const SUP_A_SPAWN_WEIGHT = 25;
+const SUP_B_SPAWN_WEIGHT = 25;
+const SUP_C_SPAWN_WEIGHT = 25;
+const SUP_D_SPAWN_WEIGHT = 25;
 
 const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level3', 8: 'bg_level2', 9: 'bg_level1', 10: 'background', 11: 'background' };
 
@@ -278,6 +280,7 @@ const assets = {
     supA70: { src: 'assets/supA/supA-70.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 70' },
     supA71: { src: 'assets/supA/supA-71.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 71' },
     supA72: { src: 'assets/supA/supA-72.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter A run 72' },
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28].map(n => ['supB' + n, { src: encodeURI('assets/supB/clideo_editor_f51fd73e3cfa47e690fefe457e5e8273-' + n + ' (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Supporter B run ' + n }])),
     supC1: { src: 'assets/supC/supC1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 1' },
     supC2: { src: 'assets/supC/supC2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 2' },
     supC3: { src: 'assets/supC/supC3.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run 3' },
@@ -337,12 +340,15 @@ const ZWOLF_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'zwolfRun' + n);
 const ZWOLF_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map(n => 'zwolfThrow' + n);
 const ZWOLF_DOWN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33].map(n => 'zwolfDown' + n);
 const SUP_ARENT_KEYS = Array.from({ length: 72 }, (_, i) => 'supA' + (i + 1));
+const SUP_B_KEYS = Array.from({ length: 28 }, (_, i) => 'supB' + (i + 1));
 const SUP_C_KEYS = ['supC1', 'supC2', 'supC3'];
 const SUP_D_KEYS = ['groen1', 'groen2', 'groen3', 'groen4', 'groen5', 'groen6', 'groen7', 'groen8', 'groen9'];
 
 // --- Grootte/schaal per type (1 = standaard, <1 kleiner, >1 groter) ---
 const SUP_A_SCALE_X = 4;
 const SUP_A_SCALE_Y = 1.9;
+const SUP_B_SCALE_X = 4;
+const SUP_B_SCALE_Y = 1.85;
 const SUP_C_SCALE_X = 1.2;
 const SUP_C_SCALE_Y = 1.2;
 const SUP_D_SCALE_X = 1.7;
@@ -353,6 +359,8 @@ const HOOLI_SCALE_Y = 1.2;
 // --- Schaal geraakt-/down-afbeelding (aparte X,Y per type) ---
 const SUP_A_HIT_SCALE_X = 1.35;
 const SUP_A_HIT_SCALE_Y = 1.35;
+const SUP_B_HIT_SCALE_X = 1.35;
+const SUP_B_HIT_SCALE_Y = 1.35;
 const SUP_C_HIT_SCALE_X = 2.0;
 const SUP_C_HIT_SCALE_Y = 1.8;
 const SUP_D_HIT_SCALE_X = 1.7;
@@ -840,15 +848,18 @@ function update(dt) {
                 animSpeed: (0.08 + Math.random() * 0.06) * speedMult  // ren-animatie in pas met loopsnelheid
             });
         } else {
-            // Normale supporters: gewogen keuze A (1), C (3), D (4) via SUP_*_SPAWN_WEIGHT
-            const totalWeight = SUP_A_SPAWN_WEIGHT + SUP_C_SPAWN_WEIGHT + SUP_D_SPAWN_WEIGHT;
+            // Normale supporters: gewogen keuze A (1), B (2), C (3), D (4) via SUP_*_SPAWN_WEIGHT
+            const totalWeight = SUP_A_SPAWN_WEIGHT + SUP_B_SPAWN_WEIGHT + SUP_C_SPAWN_WEIGHT + SUP_D_SPAWN_WEIGHT;
             const r = Math.random() * totalWeight;
-            const variant = r < SUP_A_SPAWN_WEIGHT ? 1 : r < SUP_A_SPAWN_WEIGHT + SUP_C_SPAWN_WEIGHT ? 3 : 4;
+            const variant = r < SUP_A_SPAWN_WEIGHT ? 1 : r < SUP_A_SPAWN_WEIGHT + SUP_B_SPAWN_WEIGHT ? 2 : r < SUP_A_SPAWN_WEIGHT + SUP_B_SPAWN_WEIGHT + SUP_C_SPAWN_WEIGHT ? 3 : 4;
             const baseSpeed = SUP_NORMAL_BASE_SPEED + Math.random() * SUP_NORMAL_SPEED_RANGE;
             const speedMult =
                 variant === 1 ? SUP_A_SPEED_MULT :
+                variant === 2 ? SUP_B_SPEED_MULT :
                 variant === 3 ? SUP_C_SPEED_MULT :
                 SUP_D_SPEED_MULT;
+            const animFrames = variant === 1 ? 72 : variant === 2 ? 28 : variant === 3 ? 3 : 9;
+            const animSpd = variant === 3 ? 0.08 : variant === 4 ? 0.12 : variant === 2 ? 0.12 : 0.2;
             targets.push({
                 type: 'normal',
                 x: -160,
@@ -858,7 +869,7 @@ function update(dt) {
                 variant,
                 hitTime: 0,
                 throwTimer: 0,
-                ...((variant === 1 || variant === 3 || variant === 4) && { animTime: Math.random() * (variant === 3 ? 3 : variant === 4 ? 9 : 72), animSpeed: variant === 3 ? 0.08 : variant === 4 ? 0.12 : 0.2 })
+                ...((variant === 1 || variant === 2 || variant === 3 || variant === 4) && { animTime: Math.random() * animFrames, animSpeed: animSpd })
             });
         }
     }
@@ -873,7 +884,7 @@ function update(dt) {
                 t.x += t.speed;                  // eigen loopsnelheid naar rechts
                 t.x -= currentEffectiveWorldSpeed; // wereld schuift naar links
                 // Supporter A (1), C (3) en D/groen (4): run-animatie door frames
-                if (t.variant === 1 || t.variant === 3 || t.variant === 4) t.animTime = (t.animTime || 0) + (t.animSpeed ?? 0.12);
+                if (t.variant === 1 || t.variant === 2 || t.variant === 3 || t.variant === 4) t.animTime = (t.animTime || 0) + (t.animSpeed ?? 0.12);
 
             } else if (t.type === 'hooligan') {
                 // Hooligans: random links/rechts bewegen, plus wereld‑scroll
@@ -1091,7 +1102,7 @@ function render() {
         ctx.save();
     
         // Teken rond het midden van de sprite
-        const hitYOffset = (t.isHit && t.variant === 3) ? 125 : (t.isHit && (t.variant === 1 || t.variant === 4)) ? 65 : (t.isHit ? 28 : 0);  // supA/supC/supD op stoep, supC lager
+        const hitYOffset = (t.isHit && t.variant === 3) ? 125 : (t.isHit && (t.variant === 1 || t.variant === 2 || t.variant === 4)) ? 65 : (t.isHit ? 28 : 0);  // supA/supB/supC/supD op stoep, supC lager
         ctx.translate(t.x + halfW, VIRTUAL_HEIGHT - 50 + hitYOffset);
     
         // Spiegelen
@@ -1102,7 +1113,7 @@ function render() {
         if (t.isHit) {
             sk = isHooligan
                 ? 'hooliHit'
-                : (t.variant === 4 ? 'supDDown' : t.variant === 3 ? 'supCDown' : 'normalHit');
+                : (t.variant === 4 ? 'supDDown' : t.variant === 3 ? 'supCDown' : 'normalHit');  // A en B gebruiken normalHit
         } else {
             if (isHooligan) {
                 if (t.throwTimer > 70) {
@@ -1113,7 +1124,7 @@ function render() {
                     sk = HOOLI_RUN_KEYS[frameIndex];
                 }
             } else {
-                const runKeys = t.variant === 4 ? SUP_D_KEYS : t.variant === 3 ? SUP_C_KEYS : SUP_ARENT_KEYS;
+                const runKeys = t.variant === 4 ? SUP_D_KEYS : t.variant === 3 ? SUP_C_KEYS : t.variant === 2 ? SUP_B_KEYS : SUP_ARENT_KEYS;
                 sk = runKeys[Math.floor(t.animTime || 0) % runKeys.length];
             }
         }
@@ -1123,10 +1134,14 @@ function render() {
         if (!assets[sk].loaded && SUP_ARENT_KEYS.includes(sk)) {
             drawSk = SUP_ARENT_KEYS.find(k => assets[k].loaded) || sk;
         }
+        if (!assets[drawSk]?.loaded && SUP_B_KEYS.includes(sk)) {
+            drawSk = SUP_B_KEYS.find(k => assets[k].loaded) || sk;
+        }
         if (assets[drawSk].loaded) {
             let sizeScaleX = 1, sizeScaleY = 1;
             if (drawSk === 'normalHit') {
-                sizeScaleX = SUP_A_HIT_SCALE_X; sizeScaleY = SUP_A_HIT_SCALE_Y;
+                sizeScaleX = (t.variant === 2 ? SUP_B_HIT_SCALE_X : SUP_A_HIT_SCALE_X);
+                sizeScaleY = (t.variant === 2 ? SUP_B_HIT_SCALE_Y : SUP_A_HIT_SCALE_Y);
             } else if (drawSk === 'supCDown') {
                 sizeScaleX = SUP_C_HIT_SCALE_X; sizeScaleY = SUP_C_HIT_SCALE_Y;
             } else if (drawSk === 'supDDown') {
@@ -1136,6 +1151,8 @@ function render() {
             } else {
                 if (SUP_ARENT_KEYS.includes(drawSk)) {
                     sizeScaleX = SUP_A_SCALE_X; sizeScaleY = SUP_A_SCALE_Y;
+                } else if (SUP_B_KEYS.includes(drawSk)) {
+                    sizeScaleX = SUP_B_SCALE_X; sizeScaleY = SUP_B_SCALE_Y;
                 } else if (SUP_C_KEYS.includes(drawSk)) {
                     sizeScaleX = SUP_C_SCALE_X; sizeScaleY = SUP_C_SCALE_Y;
                 } else if (SUP_D_KEYS.includes(drawSk)) {
