@@ -12,8 +12,8 @@ const SOUND_BOM_URL = 'assets/soundeffects/bom.mp3';
 const SOUND_SPRAY_URL = 'assets/soundeffects/spray.mp3';
 
 // Volume 0–1: standaard en opslagkeys (gebruiker kan instellen via Instellingen)
-const DEFAULT_VOLUME_MUSIC = 0.2;
-const DEFAULT_VOLUME_SFX = 1;
+const DEFAULT_VOLUME_MUSIC = 0.16;
+const DEFAULT_VOLUME_SFX = 0.41;
 const VOLUME_STORAGE_KEY_MUSIC = 'harley_vol_music';
 const VOLUME_STORAGE_KEY_SFX = 'harley_vol_sfx';
 function getStoredVolume(key, def) {
