@@ -858,7 +858,7 @@ function update(dt) {
                 variant === 3 ? SUP_C_SPEED_MULT :
                 SUP_D_SPEED_MULT;
             const animFrames = variant === 1 ? 72 : variant === 2 ? 28 : variant === 3 ? 48 : 9;
-            const animSpd = variant === 3 ? 0.2 : variant === 4 ? 0.12 : variant === 2 ? 0.12 : 0.2;
+            const animSpd = variant === 3 ? 0.5 : variant === 4 ? 0.12 : variant === 2 ? 0.12 : 0.2;  // supC sneller zodat loop vloeiend zichtbaar
             targets.push({
                 type: 'normal',
                 x: -160,
