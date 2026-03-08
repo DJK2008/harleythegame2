@@ -28,6 +28,11 @@ let sfxVolume = getStoredVolume(VOLUME_STORAGE_KEY_SFX, DEFAULT_VOLUME_SFX);
 
 const VIRTUAL_HEIGHT = 1080;
 const VIRTUAL_WIDTH = 1920;
+// Performance: max canvasresolutie op mobiel (minder pixels = minder lag)
+const MOBILE_MAX_CANVAS_WIDTH = 1280;
+const MOBILE_MAX_CANVAS_HEIGHT = 720;
+// Pixelratio max 2 (geen 3x op Retina) voor betere performance
+const MAX_DEVICE_PIXEL_RATIO = 2;
 const POINTS_TO_BOSS = 2500;
 const BASE_WORLD_SPEED = 6;
 const HIGH_SCORE_KEY = 'harley_high_score';
@@ -124,6 +129,18 @@ let nextEagleDelay = 20000 + Math.random() * 30000;
 let scrollPhase = 'right';   // 'right' | 'wait' | 'left'
 let scrollWaitUntil = 0;    // timestamp wanneer wachten eindigt
 let scrollPhaseWas = 'right'; // na wait: naar 'left' of terug naar 'right'
+
+// Framerate-detectie: bij lage fps tijdelijk minder zware effecten tekenen
+let fpsHistory = [];
+const FPS_HISTORY_LEN = 30;
+const FPS_LOW_THRESHOLD = 25;
+const FPS_RECOVER_THRESHOLD = 35;
+const LOW_FPS_FRAMES_TO_REDUCE = 10;
+const HIGH_FPS_FRAMES_TO_RECOVER = 30;
+const MAX_SPLATS_WHEN_REDUCED = 15;  // bij lage fps minder splats tekenen
+let lowFpsFrameCount = 0;
+let highFpsFrameCount = 0;
+let reduceQuality = false;
 
 let poops = [];
 let splats = [];
@@ -623,8 +640,20 @@ function showLevelUp() {
     if (els.levelUpScreen) els.levelUpScreen.style.display = 'flex';
 }
 
-function resize() { 
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight; 
+function resize() {
+    const isMobile = window.innerWidth < 1024 || ('ontouchstart' in window);
+    const dpr = Math.min(typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1, MAX_DEVICE_PIXEL_RATIO);
+    if (isMobile) {
+        canvas.width = Math.min(window.innerWidth, MOBILE_MAX_CANVAS_WIDTH);
+        canvas.height = Math.min(window.innerHeight, MOBILE_MAX_CANVAS_HEIGHT);
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+    } else {
+        canvas.width = Math.round(window.innerWidth * dpr);
+        canvas.height = Math.round(window.innerHeight * dpr);
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+    }
     gameScale = Math.max(0.1, canvas.height / VIRTUAL_HEIGHT);
 }
 
@@ -1332,7 +1361,8 @@ function render() {
         ctx.fillText(p.type.icon, p.x, drawY);
     }
     
-    for(let s of splats) { ctx.fillStyle = `rgba(92, 64, 51, ${s.life})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, 7); ctx.fill(); }
+    const splatsToDraw = reduceQuality ? splats.slice(0, MAX_SPLATS_WHEN_REDUCED) : splats;
+    for (const s of splatsToDraw) { ctx.fillStyle = `rgba(92, 64, 51, ${s.life})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, 7); ctx.fill(); }
     for(let p of poops) { ctx.font = `${p.radius * 2.5}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💩', p.x, p.y); }
     ctx.save();
     
@@ -1359,6 +1389,25 @@ function gameLoop(t) {
     if (!lastTime) lastTime = t;
     const dt = Math.min(100, Math.max(0, t - lastTime));
     lastTime = t;
+    // Framerate-detectie voor quality reduction bij lag
+    if (dt > 0) {
+        const instantFps = 1000 / dt;
+        fpsHistory.push(instantFps);
+        if (fpsHistory.length > FPS_HISTORY_LEN) fpsHistory.shift();
+        const avgFps = fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length;
+        if (avgFps < FPS_LOW_THRESHOLD) {
+            lowFpsFrameCount++;
+            highFpsFrameCount = 0;
+            if (lowFpsFrameCount >= LOW_FPS_FRAMES_TO_REDUCE) reduceQuality = true;
+        } else if (avgFps > FPS_RECOVER_THRESHOLD) {
+            highFpsFrameCount++;
+            lowFpsFrameCount = 0;
+            if (highFpsFrameCount >= HIGH_FPS_FRAMES_TO_RECOVER) reduceQuality = false;
+        } else {
+            lowFpsFrameCount = 0;
+            highFpsFrameCount = 0;
+        }
+    }
     update(dt);
     render();
 }

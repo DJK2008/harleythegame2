@@ -21,6 +21,9 @@ body, html {
     height: 100dvh; 
     background: #4a90e2; 
     overflow: hidden;
+    /* Performance: GPU-laag voor soepelere animatie op mobiel */
+    will-change: transform;
+    transform: translateZ(0);
 }
 
 canvas { display: block; image-rendering: pixelated; }
