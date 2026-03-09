@@ -208,7 +208,7 @@ const BOSS_CONFIG = {
     boss2: { width: 300, height: 400, scale: 1.5, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 2, throwTimeToTarget: 60,  throwHitChance: 0.7, throwDamage: 6 },
     boss3: { width: 250, height: 350, scale: 1.4, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 6 },
     boss4: { width: 260, height: 420, scale: 1.4, speed: 2.5, downScale: 0.75,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 2, throwTimeToTarget: 55,  throwHitChance: 0.7, throwDamage: 7 }, // Peperbus
-    boss5: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,      downOffset: 0, offset: 0,  mirrorFlip: false, throwCount: 1, throwTimeToTarget: 40,  throwHitChance: 0.8, throwDamage: 8 }, // Dominguez
+    boss5: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 8 }, // Dominguez
     boss6: { width: 220, height: 380, scale: 1.2, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.65, throwDamage: 5 }  // ME – gooit stok
 };
 function getBossConfig(type) {
@@ -426,11 +426,29 @@ const assets = {
     ])),
     boss4Down: { src: encodeURI('assets/peperbus/down/peperbus down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Down' },
 
-    // Dominguez
-    boss5: { src: 'assets/dom1.png', canvas: document.createElement('canvas'), loaded: false, name: "Dominguez", label: 'Boss 5' },
-    boss5Throw: { src: 'assets/domgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Gooit' },
-    boss5Eat: { src: 'assets/domeet.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Eet' },
-    boss5Down: { src: 'assets/dom2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Down' },
+    // Dominguez – nieuwe animaties in assets/dom/loopt, assets/dom/gooit, assets/dom/down
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22].map(n => [
+        'domRun' + n,
+        {
+            src: encodeURI(`assets/dom/loopt/dom gif-${n} (gesleept).png`),
+            canvas: document.createElement('canvas'),
+            loaded: false,
+            label: 'Dominguez loopt ' + n
+        }
+    ])),
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].map(n => [
+        'domThrow' + n,
+        {
+            src: encodeURI(`assets/dom/gooit/dom gif-${n} (gesleept).png`),
+            canvas: document.createElement('canvas'),
+            loaded: false,
+            label: 'Dominguez gooit ' + n
+        }
+    ])),
+    boss5: { src: encodeURI('assets/dom/loopt/dom gif-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, name: "Dominguez", label: 'Boss 5' },
+    boss5Throw: { src: encodeURI('assets/dom/gooit/dom gif-1 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Gooit' },
+    boss5Eat: { src: encodeURI('assets/dom/gooit/dom gif-10 (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Eet' },
+    boss5Down: { src: encodeURI('assets/dom/down/dom down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Down' },
 
     // ME – eindbaas level 6, gooit stok (assets/ME/lopen, gooien, down)
     ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10].map(n => [
@@ -454,6 +472,8 @@ const ZWOLF_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19].map(n
 const ZWOLF_DOWN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33].map(n => 'zwolfDown' + n);
 const BOER_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'boerRun' + n);
 const BOER_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => 'boerThrow' + n);
+const DOM_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22].map(n => 'domRun' + n);
+const DOM_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].map(n => 'domThrow' + n);
 const BRAM_RUN_KEYS = [1,2,3,4,5,6,7,8].map(n => 'bramRun' + n);
 const BRAM_SHOOT_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => 'bramShoot' + n);
 const PEPER_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'peperRun' + n);
@@ -510,7 +530,7 @@ const BOSS_ASSET_KEYS = {
     boss2: [...BOER_RUN_KEYS, ...BOER_THROW_KEYS, 'boss2Down'],
     boss3: [...BRAM_RUN_KEYS, ...BRAM_SHOOT_KEYS, 'boss3Down'],
     boss4: [...PEPER_RUN_KEYS, ...PEPER_THROW_KEYS, 'boss4Down'],
-    boss5: ['boss5', 'boss5Throw', 'boss5Eat', 'boss5Down'],
+    boss5: [...DOM_RUN_KEYS, ...DOM_THROW_KEYS, 'boss5Eat', 'boss5Down'],
     boss6: [...ME_RUN_KEYS, ...ME_THROW_KEYS, 'boss6Down']
 };
 
@@ -725,7 +745,7 @@ function spawnBoss() {
         laneIndex: i,
         targetX: laneCenters[i],
         ...(t === 'boss0' || t === 'boss1' ? { animTime: 0, downAnimTime: 0 } : {}),
-        ...(t === 'boss2' || t === 'boss3' || t === 'boss4' || t === 'boss6' ? { animTime: 0 } : {})
+        ...(t === 'boss2' || t === 'boss3' || t === 'boss4' || t === 'boss5' || t === 'boss6' ? { animTime: 0 } : {})
     };
     });
 
@@ -1210,7 +1230,7 @@ function update(dt) {
                     ? 'GLOVE'
                     : (b.type === 'boss3'
                         ? 'BALL'
-                        : (b.type === 'boss5' ? 'HAMBURGER' : (b.type === 'boss6' ? 'STICK' : (b.type === 'boss1' || b.type === 'boss4' ? 'BRICK' : 'STONE'))));
+                        : (b.type === 'boss5' ? 'FRIES' : (b.type === 'boss6' ? 'STICK' : (b.type === 'boss1' || b.type === 'boss4' ? 'BRICK' : 'STONE'))));
     
                 if (!b.eatVisualTimer || b.eatVisualTimer <= 0) {
                     const bc = getBossConfig(b.type);
@@ -1268,6 +1288,10 @@ function update(dt) {
                 b.animTime = (b.animTime || 0) + 0.25;
             }
         } else if (b.type === 'boss4') {
+            if (!b.isHit) {
+                b.animTime = (b.animTime || 0) + 0.25;
+            }
+        } else if (b.type === 'boss5') {
             if (!b.isHit) {
                 b.animTime = (b.animTime || 0) + 0.25;
             }
@@ -1498,6 +1522,24 @@ function render() {
             if (!assets[sk] || !assets[sk].loaded) {
                 sk = b.isHit ? 'boss4Down' : (b.throwVisualTimer > 0 ? PEPER_THROW_KEYS[0] : PEPER_RUN_KEYS[0]);
             }
+        } else if (b.type === 'boss5') {
+            if (b.isHit) {
+                sk = 'boss5Down';
+            } else if (b.eatVisualTimer > 0 && assets['boss5Eat']) {
+                sk = 'boss5Eat';
+            } else if (b.throwVisualTimer > 0) {
+                const throwProgress = 1 - (b.throwVisualTimer / 35);
+                const throwFrame = Math.min(Math.floor(throwProgress * DOM_THROW_KEYS.length), DOM_THROW_KEYS.length - 1);
+                sk = DOM_THROW_KEYS[throwFrame];
+            } else {
+                const loopFrame = Math.floor(b.animTime || 0) % DOM_RUN_KEYS.length;
+                sk = DOM_RUN_KEYS[loopFrame];
+            }
+            if (!assets[sk] || !assets[sk].loaded) {
+                const fallbackRun = DOM_RUN_KEYS[0] || 'boss5';
+                const fallbackThrow = DOM_THROW_KEYS[0] || fallbackRun;
+                sk = b.isHit ? 'boss5Down' : (b.throwVisualTimer > 0 ? fallbackThrow : fallbackRun);
+            }
         } else if (b.type === 'boss6') {
             if (b.isHit) {
                 sk = 'boss6Down';
@@ -1537,7 +1579,17 @@ function render() {
         const fontSize = PROJECTILE_FONT_SIZE[bg.type] ?? 32;
         ctx.font = `${fontSize}px Arial`;
         ctx.textAlign = 'center';
-        const icon = bg.type === 'GLOVE' ? '🧤' : (bg.type === 'BALL' ? '⚽' : (bg.type === 'HAMBURGER' ? '🍔' : (bg.type === 'BRICK' ? '🧱' : (bg.type === 'STICK' ? '🪵' : '🪨'))));
+        const icon = bg.type === 'GLOVE'
+            ? '🧤'
+            : (bg.type === 'BALL'
+                ? '⚽'
+                : (bg.type === 'FRIES'
+                    ? '🍟'
+                    : (bg.type === 'BRICK'
+                        ? '🧱'
+                        : (bg.type === 'STICK'
+                            ? '🪵'
+                            : '🪨'))));
         ctx.fillText(icon, bg.x, bg.y);
     }
 
