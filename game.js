@@ -169,9 +169,16 @@ const SNACKS = [
 
 const levelBossConfig = {
     1: ['boss0'],
-    2: ['boss1'], 3: ['boss2'], 4: ['boss3'], 5: ['boss4'],
-    6: ['boss3','boss4'], 7: ['boss1','boss2'], 8: ['boss1','boss2','boss4'],
-    9: ['boss1','boss4','boss3'], 10: ['boss2','boss3','boss4'], 11: ['boss1','boss2','boss3','boss4']
+    2: ['boss1'],
+    3: ['boss2'],
+    4: ['boss3'],
+    5: ['boss4'],                    // nieuwe eindbaas Peperbus
+    6: ['boss5'],                    // Dominguez schuift een level naar achter
+    7: ['boss3','boss5'],
+    8: ['boss1','boss2'],
+    9: ['boss1','boss2','boss5'],
+    10: ['boss1','boss5','boss3'],
+    11: ['boss2','boss3','boss5']
 };
 
 // --- Snelheid-instellingen (makkelijk aanpasbaar) ---
@@ -195,11 +202,12 @@ const HOOLIGAN_VX_WORLD_OFFSET = 6;   // extra t.o.v. BASE_WORLD_SPEED voor vx
 // throwCount = aantal projectielen per worp. throwTimeToTarget = frames tot projectiel de adelaar bereikt (hoger = langzamer).
 // throwHitChance = kans 0–1 dat een worp de adelaar raakt (anders mis). throwDamage = schade aan adelaar bij treffer.
 const BOSS_CONFIG = {
-    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 25, mirrorFlip: true, throwCount: 1, throwTimeToTarget: 80, throwHitChance: 0.5, throwDamage: 2 },
-    boss1: { width: 350, height: 450, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: true, throwCount: 6, throwTimeToTarget: 100, throwHitChance: 0.3, throwDamage: 1 },
-    boss2: { width: 300, height: 400, scale: 1.5, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0, mirrorFlip: true, throwCount: 2, throwTimeToTarget: 60, throwHitChance: 0.7, throwDamage: 6 },
-    boss3: { width: 250, height: 350, scale: 1.4,   speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0, mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50, throwHitChance: 0.8, throwDamage: 6 },
-    boss4: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,    downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 40, throwHitChance: 0.8, throwDamage: 8 }
+    boss0: { width: 260, height: 350, scale: 1.7, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 25, mirrorFlip: true,  throwCount: 1, throwTimeToTarget: 80, throwHitChance: 0.5, throwDamage: 2 },
+    boss1: { width: 350, height: 450, scale: 1,   speed: 2.5, downScale: 1,      downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 6, throwTimeToTarget: 100, throwHitChance: 0.3, throwDamage: 1 },
+    boss2: { width: 300, height: 400, scale: 1.5, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 2, throwTimeToTarget: 60,  throwHitChance: 0.7, throwDamage: 6 },
+    boss3: { width: 250, height: 350, scale: 1.4, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 6 },
+    boss4: { width: 260, height: 420, scale: 1.4, speed: 2.5, downScale: 0.75,   downOffset: 0, offset: 0,  mirrorFlip: false, throwCount: 2, throwTimeToTarget: 55,  throwHitChance: 0.7, throwDamage: 7 }, // Peperbus
+    boss5: { width: 250, height: 350, scale: 1,   speed: 2.5, downScale: 1,      downOffset: 0, offset: 0,  mirrorFlip: false, throwCount: 1, throwTimeToTarget: 40,  throwHitChance: 0.8, throwDamage: 8 }  // Dominguez (oude boss4)
 };
 function getBossConfig(type) {
     return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 50, throwHitChance: 0.7, throwDamage: 6 };
@@ -388,10 +396,33 @@ const assets = {
         }
     ])),
     boss3Down: { src: encodeURI('assets/bram/down/bram down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 3 Down' },
-    boss4: { src: 'assets/dom1.png', canvas: document.createElement('canvas'), loaded: false, name: "Dominguez", label: 'Boss 4' },
-    boss4Throw: { src: 'assets/domgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Gooit' },
-    boss4Eat: { src: 'assets/domeet.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Eet' },
-    boss4Down: { src: 'assets/dom2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Down' }
+
+    // Peperbus – nieuwe eindbaas (boss4) in assets/peperbus
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12].map(n => [
+        'peperRun' + n,
+        {
+            src: encodeURI(`assets/peperbus/lopen/ezgif-6450bd01d3ccea36-${n} (gesleept).png`),
+            canvas: document.createElement('canvas'),
+            loaded: false,
+            label: 'Peperbus loopt ' + n
+        }
+    ])),
+    ...Object.fromEntries([13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29].map(n => [
+        'peperThrow' + n,
+        {
+            src: encodeURI(`assets/peperbus/gooien/ezgif-6450bd01d3ccea36-${n} (gesleept).png`),
+            canvas: document.createElement('canvas'),
+            loaded: false,
+            label: 'Peperbus gooit ' + n
+        }
+    ])),
+    boss4Down: { src: encodeURI('assets/peperbus/down/peperbus down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 4 Down' },
+
+    // Dominguez – verschoven naar boss5
+    boss5: { src: 'assets/dom1.png', canvas: document.createElement('canvas'), loaded: false, name: "Dominguez", label: 'Boss 5' },
+    boss5Throw: { src: 'assets/domgooit.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Gooit' },
+    boss5Eat: { src: 'assets/domeet.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Eet' },
+    boss5Down: { src: 'assets/dom2.png', canvas: document.createElement('canvas'), loaded: false, label: 'Boss 5 Down' }
 };
 
 const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hooliRun5'];
@@ -406,6 +437,8 @@ const BOER_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'boerRun' + n);
 const BOER_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => 'boerThrow' + n);
 const BRAM_RUN_KEYS = [1,2,3,4,5,6,7,8].map(n => 'bramRun' + n);
 const BRAM_SHOOT_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => 'bramShoot' + n);
+const PEPER_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'peperRun' + n);
+const PEPER_THROW_KEYS = [13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29].map(n => 'peperThrow' + n);
 const SUP_ARENT_KEYS = Array.from({ length: 72 }, (_, i) => 'supA' + (i + 1));
 const SUP_B_KEYS = Array.from({ length: 28 }, (_, i) => 'supB' + (i + 1));
 const SUP_C_KEYS = Array.from({ length: 10 }, (_, i) => 'supC' + (i + 1));
@@ -445,8 +478,8 @@ const PROJECTILE_FONT_SIZE = {
     STONE: 28
 };
 
-const bossDownMap = { boss0: 'clownDown1', boss1: 'zwolfDown1', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
-const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3: 'Bram', boss4: 'Dominguez' };
+const bossDownMap = { boss0: 'clownDown1', boss1: 'zwolfDown1', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down', boss5: 'boss5Down' };
+const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3: 'Bram', boss4: 'Peperbus', boss5: 'Dominguez' };
 
 // Level-specifieke assets: per level de bg + alle bazen van dat level
 const BOSS_ASSET_KEYS = {
@@ -454,7 +487,8 @@ const BOSS_ASSET_KEYS = {
     boss1: [...ZWOLF_RUN_KEYS, ...ZWOLF_THROW_KEYS, ...ZWOLF_DOWN_KEYS],
     boss2: [...BOER_RUN_KEYS, ...BOER_THROW_KEYS, 'boss2Down'],
     boss3: [...BRAM_RUN_KEYS, ...BRAM_SHOOT_KEYS, 'boss3Down'],
-    boss4: ['boss4', 'boss4Throw', 'boss4Eat', 'boss4Down']
+    boss4: [...PEPER_RUN_KEYS, ...PEPER_THROW_KEYS, 'boss4Down'],
+    boss5: ['boss5', 'boss5Throw', 'boss5Eat', 'boss5Down']
 };
 
 function getLevelAssetKeys(level) {
@@ -668,7 +702,7 @@ function spawnBoss() {
         laneIndex: i,
         targetX: laneCenters[i],
         ...(t === 'boss0' || t === 'boss1' ? { animTime: 0, downAnimTime: 0 } : {}),
-        ...(t === 'boss2' || t === 'boss3' ? { animTime: 0 } : {})
+        ...(t === 'boss2' || t === 'boss3' || t === 'boss4' ? { animTime: 0 } : {})
     };
     });
 
@@ -1131,19 +1165,19 @@ function update(dt) {
                 b.x = maxX;
                 b.currentVx = -Math.abs(b.currentVx);
             }
-    
+
             // Gooilogica blijft hetzelfde
             if (b.throwTimer > 0) b.throwTimer--;
             if (b.throwTimer <= 0) {
                 b.throwTimer = 110;
-                if (b.type === 'boss4' && Math.random() < 0.3) b.eatVisualTimer = 45;
+                if (b.type === 'boss5' && Math.random() < 0.3) b.eatVisualTimer = 45;
                 else b.throwVisualTimer = 35;
-    
+
                 let pt = b.type === 'boss2'
                     ? 'GLOVE'
                     : (b.type === 'boss3'
                         ? 'BALL'
-                        : (b.type === 'boss4' ? 'HAMBURGER' : (b.type === 'boss1' ? 'BRICK' : 'STONE')));
+                        : (b.type === 'boss5' ? 'HAMBURGER' : (b.type === 'boss1' ? 'BRICK' : 'STONE')));
     
                 if (!b.eatVisualTimer || b.eatVisualTimer <= 0) {
                     const bc = getBossConfig(b.type);
@@ -1197,6 +1231,10 @@ function update(dt) {
                 b.animTime = (b.animTime || 0) + 0.25;
             }
         } else if (b.type === 'boss3') {
+            if (!b.isHit) {
+                b.animTime = (b.animTime || 0) + 0.25;
+            }
+        } else if (b.type === 'boss4') {
             if (!b.isHit) {
                 b.animTime = (b.animTime || 0) + 0.25;
             }
@@ -1409,12 +1447,26 @@ function render() {
             if (!assets[sk] || !assets[sk].loaded) {
                 sk = b.isHit ? 'boss3Down' : (b.throwVisualTimer > 0 ? BRAM_SHOOT_KEYS[0] : BRAM_RUN_KEYS[0]);
             }
+        } else if (b.type === 'boss4') {
+            if (b.isHit) {
+                sk = 'boss4Down';
+            } else if (b.throwVisualTimer > 0) {
+                const throwProgress = 1 - (b.throwVisualTimer / 35);
+                const throwFrame = Math.min(Math.floor(throwProgress * PEPER_THROW_KEYS.length), PEPER_THROW_KEYS.length - 1);
+                sk = PEPER_THROW_KEYS[throwFrame];
+            } else {
+                const loopFrame = Math.floor(b.animTime || 0) % PEPER_RUN_KEYS.length;
+                sk = PEPER_RUN_KEYS[loopFrame];
+            }
+            if (!assets[sk] || !assets[sk].loaded) {
+                sk = b.isHit ? 'boss4Down' : (b.throwVisualTimer > 0 ? PEPER_THROW_KEYS[0] : PEPER_RUN_KEYS[0]);
+            }
         } else {
             sk = b.isHit
                 ? bossDownMap[b.type]
                 : (b.throwVisualTimer > 0
                     ? b.type + 'Throw'
-                    : (b.eatVisualTimer > 0 ? 'boss4Eat' : b.type));
+                    : (b.eatVisualTimer > 0 ? 'boss5Eat' : b.type));
         }
     
         if (assets[sk] && assets[sk].loaded) {
