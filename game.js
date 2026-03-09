@@ -225,10 +225,16 @@ const SUP_B_SPAWN_WEIGHT = 25;
 const SUP_C_SPAWN_WEIGHT = 25;
 const SUP_D_SPAWN_WEIGHT = 25;
 
-const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level4', 7: 'bg_level4', 8: 'bg_level3', 9: 'bg_level2', 10: 'bg_level1', 11: 'background', 12: 'background' };
+const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level5', 7: 'bg_level4', 8: 'bg_level3', 9: 'bg_level2', 10: 'bg_level1', 11: 'background', 12: 'background' };
 
 // Per level: true = endless scrolling, false = scroll stopt aan het einde (adelaar kan wel terug naar links)
-const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: false, 5: true, 6: true, 7: true, 8: true, 9: true, 10: true, 11: true, 12: true };
+const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: false, 5: true, 6: false, 7: true, 8: true, 9: true, 10: true, 11: true, 12: true };
+
+// Level 6: start helemaal rechts, scroll naar links, even wachten, dan weer naar rechts
+const LEVEL_SCROLL_START_RIGHT = { 6: true };
+// Wachttijd (ms) tussen scroll-richting omdraaien; level 6 = kort
+const LEVEL_SCROLL_WAIT_MS = { 6: 1000 };
+const DEFAULT_SCROLL_WAIT_MS = 2200;
 
 const assets = {
     background: { src: BACKGROUND_URL, canvas: document.createElement('canvas'), loaded: false, label: 'Achtergrond' },
@@ -832,9 +838,14 @@ function resetGame() {
     eagleSoundTimer = 0;
     nextEagleDelay = 20000 + Math.random() * 30000;
     if (LEVEL_ENDLESS_SCROLL[currentLevel] === false) {
-        scrollPhase = 'right';
         scrollWaitUntil = 0;
-        scrollPhaseWas = 'right';
+        if (LEVEL_SCROLL_START_RIGHT[currentLevel]) {
+            scrollPhase = 'left';
+            scrollPhaseWas = 'left';
+        } else {
+            scrollPhase = 'right';
+            scrollPhaseWas = 'right';
+        }
     }
     if (els.healthBar) els.healthBar.style.width = '100%';
     if (els.bossHealthContainer) els.bossHealthContainer.style.display = 'none';
@@ -917,14 +928,19 @@ function update(dt) {
         const maxScroll = bgAsset && bgAsset.loaded
             ? Math.max(0, Math.floor(VIRTUAL_HEIGHT * (bgAsset.canvas.width / bgAsset.canvas.height)) - canvas.width / gameScale)
             : 9999;
+        const scrollWaitMs = LEVEL_SCROLL_WAIT_MS[currentLevel] ?? DEFAULT_SCROLL_WAIT_MS;
         const sx = (worldStep * 0.5);
+        // Level 6 (e.d.): start rechts; initialiseer worldStep eenmalig
+        if (LEVEL_SCROLL_START_RIGHT[currentLevel] && scrollPhase === 'left' && worldStep === 0 && maxScroll < 9999) {
+            worldStep = maxScroll * 2;
+        }
         if (scrollPhase === 'right') {
             currentEffectiveWorldSpeed = (bossActive && !allBossesDefeated) ? 0 : autoScrollSpeed;
             worldStep += currentEffectiveWorldSpeed;
             if (sx >= maxScroll) {
                 worldStep = maxScroll * 2;
                 scrollPhase = 'wait';
-                scrollWaitUntil = Date.now() + 2200;
+                scrollWaitUntil = Date.now() + scrollWaitMs;
                 scrollPhaseWas = 'right';
             }
         } else if (scrollPhase === 'wait') {
@@ -937,7 +953,7 @@ function update(dt) {
             worldStep = Math.max(0, worldStep + currentEffectiveWorldSpeed);
             if (worldStep <= 0) {
                 scrollPhase = 'wait';
-                scrollWaitUntil = Date.now() + 2200;
+                scrollWaitUntil = Date.now() + scrollWaitMs;
                 scrollPhaseWas = 'left';
             }
         }
