@@ -1342,7 +1342,7 @@ function render() {
         ctx.restore();
     }
     for (let bg of beerGlasses) {
-        const fontSize = bg.type === 'GLOVE' ? 36 : 24; // handschoenen iets groter dan de rest
+        const fontSize = bg.type === 'GLOVE' ? 56 : 54; // handschoenen iets groter dan de rest
         ctx.font = `${fontSize}px Arial`;
         ctx.textAlign = 'center';
         ctx.fillText(
