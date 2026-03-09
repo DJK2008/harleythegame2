@@ -208,7 +208,7 @@ const BOSS_CONFIG = {
     boss2: { width: 300, height: 400, scale: 1.5, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 2, throwTimeToTarget: 60,  throwHitChance: 0.7, throwDamage: 6 },
     boss3: { width: 300, height: 350, scale: 1.4, speed: 2.5, downScale: 0.7,    downOffset: 0, offset: 0,  mirrorFlip: true,  throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 6 },
     boss4: { width: 260, height: 420, scale: 1.4, speed: 2.5, downScale: 0.75,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 2, throwTimeToTarget: 55,  throwHitChance: 0.7, throwDamage: 7 }, // Peperbus
-    boss5: { width: 250, height: 350, scale: 1,6,   speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 8 }, // Dominguez
+    boss5: { width: 250, height: 350, scale: 1.6, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 8 }, // Dominguez
     boss6: { width: 220, height: 380, scale: 1.2, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.65, throwDamage: 5 }  // ME – gooit stok
 };
 function getBossConfig(type) {
@@ -609,16 +609,24 @@ async function loadAssets(keys, options = {}) {
 
 async function preloadCore() {
     const total = CORE_ASSET_KEYS.length;
-    updateLoadingBar(0, total);
-    await loadAssets(CORE_ASSET_KEYS, {
-        updateLoadingBar: true,
-        timeoutMs: 60000
-    });
-    const loadedCount = CORE_ASSET_KEYS.filter(k => assets[k] && assets[k].loaded).length;
-    updateLoadingBar(loadedCount, total);
-    if (assets.background && assets.background.loaded) bgImg.src = assets.background.src;
-    if (els.loadingText) els.loadingText.style.display = 'none';
-    if (els.startBtn) els.startBtn.disabled = false;
+    try {
+        updateLoadingBar(0, total || 1);
+        await loadAssets(CORE_ASSET_KEYS, {
+            updateLoadingBar: true,
+            // Sneller falen en nooit oneindig wachten op 1 asset
+            timeoutMs: 20000,
+            silentFail: true
+        });
+    } catch (e) {
+        // Zorg dat een fout in preload niet de game blokkeert
+        console.error('Fout tijdens preloadCore:', e);
+    } finally {
+        const loadedCount = CORE_ASSET_KEYS.filter(k => assets[k] && assets[k].loaded).length;
+        updateLoadingBar(loadedCount, total || 1);
+        if (assets.background && assets.background.loaded) bgImg.src = assets.background.src;
+        if (els.loadingText) els.loadingText.style.display = 'none';
+        if (els.startBtn) els.startBtn.disabled = false;
+    }
 }
 
 function updateLevelLoadingProgress(level, current, total) {
