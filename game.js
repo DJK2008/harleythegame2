@@ -416,6 +416,15 @@ const SUP_D_HIT_SCALE_Y = 1.2;
 const HOOLI_HIT_SCALE_X = 1.6;
 const HOOLI_HIT_SCALE_Y = 1.2;
 
+// Grootte (font-size in px) per projectieltype (beerGlasses)
+const PROJECTILE_FONT_SIZE = {
+    GLOVE: 56,
+    BALL: 40,
+    HAMBURGER: 44,
+    BRICK: 44,
+    STONE: 28
+};
+
 const bossDownMap = { boss0: 'clownDown1', boss1: 'zwolfDown1', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down' };
 const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3: 'Bram', boss4: 'Dominguez' };
 
@@ -1384,22 +1393,11 @@ function render() {
         ctx.restore();
     }
     for (let bg of beerGlasses) {
-        const fontSize = bg.type === 'GLOVE' ? 56 : 54; // handschoenen iets groter dan de rest
+        const fontSize = PROJECTILE_FONT_SIZE[bg.type] ?? 32;
         ctx.font = `${fontSize}px Arial`;
         ctx.textAlign = 'center';
-        ctx.fillText(
-            bg.type === 'GLOVE'
-                ? '🧤'
-                : (bg.type === 'BALL'
-                    ? '⚽'
-                    : (bg.type === 'HAMBURGER'
-                        ? '🍔'
-                        : (bg.type === 'BRICK'
-                            ? '🧱'
-                            : '🪨'))),
-            bg.x,
-            bg.y
-        );
+        const icon = bg.type === 'GLOVE' ? '🧤' : (bg.type === 'BALL' ? '⚽' : (bg.type === 'HAMBURGER' ? '🍔' : (bg.type === 'BRICK' ? '🧱' : '🪨')));
+        ctx.fillText(icon, bg.x, bg.y);
     }
 
     const t = Date.now() * 0.001;
