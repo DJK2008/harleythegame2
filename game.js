@@ -1177,7 +1177,7 @@ function update(dt) {
                     ? 'GLOVE'
                     : (b.type === 'boss3'
                         ? 'BALL'
-                        : (b.type === 'boss5' ? 'HAMBURGER' : (b.type === 'boss1' ? 'BRICK' : 'STONE')));
+                        : (b.type === 'boss5' ? 'HAMBURGER' : (b.type === 'boss1' || b.type === 'boss4' ? 'BRICK' : 'STONE')));
     
                 if (!b.eatVisualTimer || b.eatVisualTimer <= 0) {
                     const bc = getBossConfig(b.type);
