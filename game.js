@@ -228,10 +228,13 @@ const SUP_D_SPAWN_WEIGHT = 25;
 const LEVEL_BG_KEYS = { 1: 'bg_level1', 2: 'bg_level2', 3: 'bg_level3', 4: 'bg_level4', 5: 'bg_level5', 6: 'bg_level5', 7: 'bg_level4', 8: 'bg_level3', 9: 'bg_level2', 10: 'bg_level1', 11: 'background', 12: 'background' };
 
 // Per level: true = endless scrolling, false = scroll stopt aan het einde (adelaar kan wel terug naar links)
-const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: false, 5: true, 6: false, 7: true, 8: true, 9: true, 10: true, 11: true, 12: true };
+// Level 7–9: bounded, rechts→links. Level 10: endless, rechts→links (infinite)
+const LEVEL_ENDLESS_SCROLL = { 1: true, 2: true, 3: false, 4: false, 5: true, 6: false, 7: false, 8: false, 9: false, 10: true, 11: true, 12: true };
 
-// Level 6: start helemaal rechts, scroll naar links, even wachten, dan weer naar rechts
-const LEVEL_SCROLL_START_RIGHT = { 6: true };
+// Start rechts en scroll naar links (bounded: 6,7,8,9; endless level 10 gebruikt LEVEL_ENDLESS_SCROLL_LEFT)
+const LEVEL_SCROLL_START_RIGHT = { 6: true, 7: true, 8: true, 9: true, 10: true };
+// Endless levels die naar links scrollen (worldStep daalt, start rechts)
+const LEVEL_ENDLESS_SCROLL_LEFT = { 10: true };
 // Wachttijd (ms) tussen scroll-richting omdraaien; level 6 = kort
 const LEVEL_SCROLL_WAIT_MS = { 6: 1000 };
 const DEFAULT_SCROLL_WAIT_MS = 2200;
@@ -945,11 +948,21 @@ function update(dt) {
     let worldSpeedFactor = (player.dx < 0) ? 0.3 : 1.0;
     const allBossesDefeated = activeBosses.length > 0 && activeBosses.every(b => b.isHit);
     const endlessScroll = LEVEL_ENDLESS_SCROLL[currentLevel] !== false;
+    const scrollLeft = LEVEL_ENDLESS_SCROLL_LEFT[currentLevel];
     const autoScrollSpeed = BASE_WORLD_SPEED * 0.85;
     let currentEffectiveWorldSpeed;
     if (endlessScroll) {
         currentEffectiveWorldSpeed = (bossActive && !allBossesDefeated) ? 0 : BASE_WORLD_SPEED * worldSpeedFactor;
-        worldStep += currentEffectiveWorldSpeed;
+        if (scrollLeft) {
+            const bgKey = LEVEL_BG_KEYS[currentLevel] || 'background';
+            const bgAsset = assets[bgKey];
+            const dw = bgAsset && bgAsset.loaded ? Math.floor(VIRTUAL_HEIGHT * (bgAsset.canvas.width / bgAsset.canvas.height)) : 2000;
+            if (worldStep <= 0) worldStep = 2 * dw; // start rechts
+            worldStep -= currentEffectiveWorldSpeed;
+            if (worldStep < 0) worldStep += 2 * dw;
+        } else {
+            worldStep += currentEffectiveWorldSpeed;
+        }
     } else {
         const bgKey = LEVEL_BG_KEYS[currentLevel] || 'background';
         const bgAsset = assets[bgKey];
@@ -1330,9 +1343,11 @@ function render() {
     if (bgAsset && bgAsset.loaded) {
         const dw = Math.floor(VIRTUAL_HEIGHT * (bgAsset.canvas.width / bgAsset.canvas.height));
         const endless = LEVEL_ENDLESS_SCROLL[currentLevel] !== false;
+        const scrollLeft = LEVEL_ENDLESS_SCROLL_LEFT[currentLevel];
         let sx;
         if (endless) {
-            sx = Math.floor((worldStep * 0.5) % dw);
+            // scrollLeft (rechts→links): worldStep daalt van 2*dw naar 0, sx = worldStep*0.5
+            sx = scrollLeft ? Math.floor(worldStep * 0.5) : Math.floor((worldStep * 0.5) % dw);
             ctx.drawImage(bgAsset.canvas, -sx, 0, dw, VIRTUAL_HEIGHT);
             ctx.drawImage(bgAsset.canvas, dw - sx - 1, 0, dw + 1, VIRTUAL_HEIGHT);
         } else {
