@@ -21,6 +21,7 @@ const LEVEL_MUSIC_URL = {
     10: LEVEL_START_AUDIO_URL
 };
 const SILENT_AUDIO_URL = 'audio/500-milliseconds-of-silence.mp3';
+const UNLOCK_CODE_HASH = 'c2ec7d135a87450d338a774a9714488e29da62ef7e717ad01c4dd97b2d8ed45a';
 const SOUND_EAGLE_URL = 'assets/soundeffects/eagle.mp3';
 const SOUND_POOP_URL = 'assets/soundeffects/schijt1.mp3';
 const SOUND_BOM_URL = 'assets/soundeffects/bom.mp3';
@@ -52,7 +53,18 @@ const POINTS_TO_BOSS = 2500;
 const BASE_WORLD_SPEED = 6;
 const HIGH_SCORE_KEY = 'harley_high_score';
 
-const IS_DEBUG = new URLSearchParams(window.location.search).has('debug');
+const UNLOCK_ALL_LEVELS_KEY = 'harley_unlock_all_levels';
+const IS_DEBUG_PARAM = new URLSearchParams(window.location.search).has('debug');
+
+// Debug / testknoppen: aan via ?debug of via geheime unlock-code (opgeslagen in localStorage)
+function isDebugEnabled() {
+    if (IS_DEBUG_PARAM) return true;
+    try {
+        return localStorage.getItem(UNLOCK_ALL_LEVELS_KEY) === '1';
+    } catch (e) {
+        return IS_DEBUG_PARAM;
+    }
+}
 
 // --- GoatCounter analytics helpers ---
 function trackEvent(path, title, vars) {
@@ -109,6 +121,7 @@ const els = {
     musicValue: document.getElementById('music-value'),
     sfxValue: document.getElementById('sfx-value'),
     closeSettingsBtn: document.getElementById('close-settings-btn'),
+    unlockCodeBtn: document.getElementById('unlock-code-btn'),
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -810,7 +823,8 @@ function checkIOS() {
 }
 
 function initDebugUI() {
-    if (!IS_DEBUG && els.debugPanel) els.debugPanel.style.display = 'none';
+    if (!els.debugPanel) return;
+    els.debugPanel.style.display = isDebugEnabled() ? 'block' : 'none';
 }
 
 function openExternalUrl(url) {
@@ -838,6 +852,23 @@ function initExternalLinks() {
             openExternalUrl(url);
         });
     });
+}
+
+async function hashStringSHA256(str) {
+    if (!window.crypto || !window.crypto.subtle || !window.TextEncoder) {
+        // Als Web Crypto niet beschikbaar is, geen unlock mogelijk
+        return '';
+    }
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    const bytes = new Uint8Array(digest);
+    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function verifyUnlockCode(input) {
+    const hash = await hashStringSHA256(input.trim());
+    return hash && hash === UNLOCK_CODE_HASH;
 }
 
 function addFailedAsset(label) {
@@ -1985,9 +2016,23 @@ bind('settings-btn', () => {
 });
 bind('close-settings-btn', () => { if (els.settingsModal) els.settingsModal.style.display = 'none'; });
 bind('ios-later-btn', () => { if (els.iosModal) els.iosModal.style.display = 'none'; });
+if (els.unlockCodeBtn) {
+    els.unlockCodeBtn.addEventListener('click', async () => {
+        const input = (prompt('Voer de geheime code in om alle levels te ontgrendelen:') || '').trim();
+        if (!input) return;
+        const ok = await verifyUnlockCode(input);
+        if (ok) {
+            try { localStorage.setItem(UNLOCK_ALL_LEVELS_KEY, '1'); } catch (e) {}
+            alert('Alle levels zijn ontgrendeld. De testknoppen zijn nu beschikbaar.');
+            initDebugUI();
+        } else {
+            alert('Ongeldige code.');
+        }
+    });
+}
 
 async function startLevel(n) {
-    if (!IS_DEBUG) return;
+    if (!isDebugEnabled()) return;
     await loadLevelAssets(n);
     currentLevel = n;
     levelScoreStart = (n - 1) * POINTS_TO_BOSS;
@@ -1999,7 +2044,7 @@ async function startLevel(n) {
 }
 
 async function forceLevel(n) {
-    if (!IS_DEBUG) return;
+    if (!isDebugEnabled()) return;
     await loadLevelAssets(n);
     currentLevel = n; 
     levelScoreStart = (n - 1) * POINTS_TO_BOSS;
@@ -2010,8 +2055,8 @@ async function forceLevel(n) {
     animationFrameId = requestAnimationFrame(gameLoop);
 }
 
-// Expose only in debug mode (handy in console)
-if (IS_DEBUG) { window.forceLevel = forceLevel; window.startLevel = startLevel; }
+// Expose only in debug/unlock mode (handig in console)
+if (isDebugEnabled()) { window.forceLevel = forceLevel; window.startLevel = startLevel; }
 
 window.addEventListener('load', () => {
     preload();
@@ -2039,7 +2084,7 @@ window.addEventListener('load', () => {
         if (els.sfxValue) els.sfxValue.textContent = Math.round(sfxVolume * 100) + '%';
     }
 
-    if (IS_DEBUG) {
+    if (isDebugEnabled()) {
         document.querySelectorAll('.debug-start-level-btn[data-level]').forEach((btn) => {
             const handler = async (e) => {
                 e.preventDefault();
