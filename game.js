@@ -1113,8 +1113,6 @@ function resetGame() {
         levelAudio.src = musicUrl;
     }
     if (levelAudio.paused) levelAudio.play().catch(() => {});
-    soundEagle.currentTime = 0;
-    soundEagle.play().catch(() => {});
 
     // Forceer UI-refresh bij nieuw level
     lastRenderedScore = -1;
