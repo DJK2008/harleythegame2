@@ -6,6 +6,20 @@ const BACKGROUND_URL = 'assets/bg2.jpg';
 const LEVEL_START_AUDIO_URL = 'audio/music.mp3';
 const LEVEL_WIN_AUDIO_URL = 'audio/forza eagles.wav';
 const LEVEL_GAMEOVER_AUDIO_URL = 'audio/always look.wav';
+
+// Per-level muziek (nu allemaal dezelfde file; later makkelijk per level aan te passen)
+const LEVEL_MUSIC_URL = {
+    1: LEVEL_START_AUDIO_URL,
+    2: LEVEL_START_AUDIO_URL,
+    3: LEVEL_START_AUDIO_URL,
+    4: LEVEL_START_AUDIO_URL,
+    5: LEVEL_START_AUDIO_URL,
+    6: LEVEL_START_AUDIO_URL,
+    7: LEVEL_START_AUDIO_URL,
+    8: LEVEL_START_AUDIO_URL,
+    9: LEVEL_START_AUDIO_URL,
+    10: LEVEL_START_AUDIO_URL
+};
 const SOUND_EAGLE_URL = 'assets/soundeffects/eagle.mp3';
 const SOUND_POOP_URL = 'assets/soundeffects/schijt1.mp3';
 const SOUND_BOM_URL = 'assets/soundeffects/bom.mp3';
@@ -1089,6 +1103,13 @@ function resetGame() {
     });
     winAudio.pause(); winAudio.currentTime = 0;
     gameOverAudio.pause(); gameOverAudio.currentTime = 0;
+
+    // Kies muziek per level (nu allemaal dezelfde; later eenvoudig per level aan te passen)
+    const musicUrl = LEVEL_MUSIC_URL[currentLevel] || LEVEL_START_AUDIO_URL;
+    const resolvedMusicUrl = new URL(musicUrl, window.location.href).href;
+    if (levelAudio.src !== resolvedMusicUrl) {
+        levelAudio.src = musicUrl;
+    }
     if (levelAudio.paused) levelAudio.play().catch(() => {});
     soundEagle.currentTime = 0;
     soundEagle.play().catch(() => {});
@@ -1912,9 +1933,11 @@ const bind = (id, fn) => {
 
 bind('start-btn', async () => { 
     if(gameActive) return; 
-    // Audio-unlock: speel korte tik op effecten, maar niet de achtergrondmuziek zelf
-    [winAudio, gameOverAudio, soundEagle, soundPoop, soundBom, soundSpray].forEach(a => {
-        a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+    // Audio-unlock: korte 'tik' op alle audio-elementen (met tijdelijk volume 0)
+    [levelAudio, winAudio, gameOverAudio, soundEagle, soundPoop, soundBom, soundSpray].forEach(a => {
+        const prevVol = a.volume;
+        a.volume = 0;
+        a.play().then(() => { a.pause(); a.currentTime = 0; a.volume = prevVol; }).catch(() => { a.volume = prevVol; });
     });
     await requestLandscape();
     await loadLevelAssets(1);
