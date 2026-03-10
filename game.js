@@ -610,6 +610,20 @@ const BOSS_PROJECTILE_TYPE = {
     boss4: 'BRICK'
 };
 
+// Generieke animatie-sleutels per eindbaas (run/throw/down)
+const GENERIC_BOSS_ANIM_KEYS = {
+    boss2: { run: BOER_RUN_KEYS, throw: BOER_THROW_KEYS, down: 'boss2Down' },
+    boss3: { run: BRAM_RUN_KEYS, throw: BRAM_SHOOT_KEYS, down: 'boss3Down' },
+    boss4: { run: PEPER_RUN_KEYS, throw: PEPER_THROW_KEYS, down: 'boss4Down' },
+    boss6: { run: ME_RUN_KEYS, throw: ME_THROW_KEYS, down: 'boss6Down' },
+    boss7: { run: REFS_RUN_KEYS, throw: REFS_THROW_KEYS, down: 'boss7Down' },
+    boss8: { run: SUPERHOOL_RUN_KEYS, throw: SUPERHOOL_THROW_KEYS, down: 'boss8Down' },
+    boss9: { run: EINDEIND_RUN_KEYS, throw: EINDEIND_THROW_KEYS, down: 'boss9Down' }
+};
+
+// Bazen met simpele animTime-update (geen aparte downAnimTime)
+const SIMPLE_ANIM_BOSSES = new Set(['boss2','boss3','boss4','boss5','boss6','boss7','boss8','boss9']);
+
 const bossDownMap = { boss0: 'clownDown1', boss1: 'zwolfDown1', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down', boss5: 'boss5Down', boss6: 'boss6Down', boss7: 'boss7Down', boss8: 'boss8Down', boss9: 'boss9Down' };
 const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3: 'Bram', boss4: 'Peperbus', boss5: 'Dominguez', boss6: 'ME', boss7: 'Refs', boss8: 'Super Hooligan', boss9: 'Eindeindbaas' };
 
@@ -1401,35 +1415,7 @@ function update(dt) {
             } else {
                 b.animTime = (b.animTime || 0) + 0.3;
             }
-        } else if (b.type === 'boss2') {
-            if (!b.isHit) {
-                b.animTime = (b.animTime || 0) + 0.25;
-            }
-        } else if (b.type === 'boss3') {
-            if (!b.isHit) {
-                b.animTime = (b.animTime || 0) + 0.25;
-            }
-        } else if (b.type === 'boss4') {
-            if (!b.isHit) {
-                b.animTime = (b.animTime || 0) + 0.25;
-            }
-        } else if (b.type === 'boss5') {
-            if (!b.isHit) {
-                b.animTime = (b.animTime || 0) + 0.25;
-            }
-        } else if (b.type === 'boss6') {
-            if (!b.isHit) {
-                b.animTime = (b.animTime || 0) + 0.25;
-            }
-        } else if (b.type === 'boss7') {
-            if (!b.isHit) {
-                b.animTime = (b.animTime || 0) + 0.25;
-            }
-        } else if (b.type === 'boss8') {
-            if (!b.isHit) {
-                b.animTime = (b.animTime || 0) + 0.25;
-            }
-        } else if (b.type === 'boss9') {
+        } else if (SIMPLE_ANIM_BOSSES.has(b.type)) {
             if (!b.isHit) {
                 b.animTime = (b.animTime || 0) + 0.25;
             }
@@ -1616,48 +1602,6 @@ function render() {
             if (!assets[sk] || !assets[sk].loaded) {
                 sk = b.isHit ? ZWOLF_DOWN_KEYS[0] : (b.throwVisualTimer > 0 ? ZWOLF_THROW_KEYS[0] : ZWOLF_RUN_KEYS[0]);
             }
-        } else if (b.type === 'boss2') {
-            if (b.isHit) {
-                sk = 'boss2Down';
-            } else if (b.throwVisualTimer > 0) {
-                const throwProgress = 1 - (b.throwVisualTimer / 35);
-                const throwFrame = Math.min(Math.floor(throwProgress * BOER_THROW_KEYS.length), BOER_THROW_KEYS.length - 1);
-                sk = BOER_THROW_KEYS[throwFrame];
-            } else {
-                const loopFrame = Math.floor(b.animTime || 0) % BOER_RUN_KEYS.length;
-                sk = BOER_RUN_KEYS[loopFrame];
-            }
-            if (!assets[sk] || !assets[sk].loaded) {
-                sk = b.isHit ? 'boss2Down' : (b.throwVisualTimer > 0 ? BOER_THROW_KEYS[0] : BOER_RUN_KEYS[0]);
-            }
-        } else if (b.type === 'boss3') {
-            if (b.isHit) {
-                sk = 'boss3Down';
-            } else if (b.throwVisualTimer > 0) {
-                const throwProgress = 1 - (b.throwVisualTimer / 35);
-                const throwFrame = Math.min(Math.floor(throwProgress * BRAM_SHOOT_KEYS.length), BRAM_SHOOT_KEYS.length - 1);
-                sk = BRAM_SHOOT_KEYS[throwFrame];
-            } else {
-                const loopFrame = Math.floor(b.animTime || 0) % BRAM_RUN_KEYS.length;
-                sk = BRAM_RUN_KEYS[loopFrame];
-            }
-            if (!assets[sk] || !assets[sk].loaded) {
-                sk = b.isHit ? 'boss3Down' : (b.throwVisualTimer > 0 ? BRAM_SHOOT_KEYS[0] : BRAM_RUN_KEYS[0]);
-            }
-        } else if (b.type === 'boss4') {
-            if (b.isHit) {
-                sk = 'boss4Down';
-            } else if (b.throwVisualTimer > 0) {
-                const throwProgress = 1 - (b.throwVisualTimer / 35);
-                const throwFrame = Math.min(Math.floor(throwProgress * PEPER_THROW_KEYS.length), PEPER_THROW_KEYS.length - 1);
-                sk = PEPER_THROW_KEYS[throwFrame];
-            } else {
-                const loopFrame = Math.floor(b.animTime || 0) % PEPER_RUN_KEYS.length;
-                sk = PEPER_RUN_KEYS[loopFrame];
-            }
-            if (!assets[sk] || !assets[sk].loaded) {
-                sk = b.isHit ? 'boss4Down' : (b.throwVisualTimer > 0 ? PEPER_THROW_KEYS[0] : PEPER_RUN_KEYS[0]);
-            }
         } else if (b.type === 'boss5') {
             if (b.isHit) {
                 sk = 'boss5Down';
@@ -1676,67 +1620,24 @@ function render() {
                 const fallbackThrow = DOM_THROW_KEYS[0] || fallbackRun;
                 sk = b.isHit ? 'boss5Down' : (b.throwVisualTimer > 0 ? fallbackThrow : fallbackRun);
             }
-        } else if (b.type === 'boss6') {
+        } else if (GENERIC_BOSS_ANIM_KEYS[b.type]) {
+            const keys = GENERIC_BOSS_ANIM_KEYS[b.type];
             if (b.isHit) {
-                sk = 'boss6Down';
-            } else if (b.throwVisualTimer > 0) {
+                sk = keys.down;
+            } else if (b.throwVisualTimer > 0 && keys.throw && keys.throw.length) {
                 const throwProgress = 1 - (b.throwVisualTimer / 35);
-                const throwFrame = Math.min(Math.floor(throwProgress * ME_THROW_KEYS.length), ME_THROW_KEYS.length - 1);
-                sk = ME_THROW_KEYS[throwFrame];
+                const throwFrame = Math.min(Math.floor(throwProgress * keys.throw.length), keys.throw.length - 1);
+                sk = keys.throw[throwFrame];
+            } else if (keys.run && keys.run.length) {
+                const loopFrame = Math.floor(b.animTime || 0) % keys.run.length;
+                sk = keys.run[loopFrame];
             } else {
-                const loopFrame = Math.floor(b.animTime || 0) % ME_RUN_KEYS.length;
-                sk = ME_RUN_KEYS[loopFrame];
+                sk = keys.down;
             }
             if (!assets[sk] || !assets[sk].loaded) {
-                sk = b.isHit ? 'boss6Down' : (b.throwVisualTimer > 0 ? ME_THROW_KEYS[0] : ME_RUN_KEYS[0]);
-            }
-        } else if (b.type === 'boss7') {
-            if (b.isHit) {
-                sk = 'boss7Down';
-            } else if (b.throwVisualTimer > 0) {
-                const throwProgress = 1 - (b.throwVisualTimer / 35);
-                const throwFrame = Math.min(Math.floor(throwProgress * REFS_THROW_KEYS.length), REFS_THROW_KEYS.length - 1);
-                sk = REFS_THROW_KEYS[throwFrame];
-            } else {
-                const loopFrame = Math.floor(b.animTime || 0) % REFS_RUN_KEYS.length;
-                sk = REFS_RUN_KEYS[loopFrame];
-            }
-            if (!assets[sk] || !assets[sk].loaded) {
-                const fallbackRun = REFS_RUN_KEYS[0] || 'boss7Down';
-                const fallbackThrow = REFS_THROW_KEYS[0] || fallbackRun;
-                sk = b.isHit ? 'boss7Down' : (b.throwVisualTimer > 0 ? fallbackThrow : fallbackRun);
-            }
-        } else if (b.type === 'boss8') {
-            if (b.isHit) {
-                sk = 'boss8Down';
-            } else if (b.throwVisualTimer > 0) {
-                const throwProgress = 1 - (b.throwVisualTimer / 35);
-                const throwFrame = Math.min(Math.floor(throwProgress * SUPERHOOL_THROW_KEYS.length), SUPERHOOL_THROW_KEYS.length - 1);
-                sk = SUPERHOOL_THROW_KEYS[throwFrame];
-            } else {
-                const loopFrame = Math.floor(b.animTime || 0) % SUPERHOOL_RUN_KEYS.length;
-                sk = SUPERHOOL_RUN_KEYS[loopFrame];
-            }
-            if (!assets[sk] || !assets[sk].loaded) {
-                const fallbackRun = SUPERHOOL_RUN_KEYS[0] || 'boss8Down';
-                const fallbackThrow = SUPERHOOL_THROW_KEYS[0] || fallbackRun;
-                sk = b.isHit ? 'boss8Down' : (b.throwVisualTimer > 0 ? fallbackThrow : fallbackRun);
-            }
-        } else if (b.type === 'boss9') {
-            if (b.isHit) {
-                sk = 'boss9Down';
-            } else if (b.throwVisualTimer > 0) {
-                const throwProgress = 1 - (b.throwVisualTimer / 35);
-                const throwFrame = Math.min(Math.floor(throwProgress * EINDEIND_THROW_KEYS.length), EINDEIND_THROW_KEYS.length - 1);
-                sk = EINDEIND_THROW_KEYS[throwFrame];
-            } else {
-                const loopFrame = Math.floor(b.animTime || 0) % EINDEIND_RUN_KEYS.length;
-                sk = EINDEIND_RUN_KEYS[loopFrame];
-            }
-            if (!assets[sk] || !assets[sk].loaded) {
-                const fallbackRun = EINDEIND_RUN_KEYS[0] || 'boss9Down';
-                const fallbackThrow = EINDEIND_THROW_KEYS[0] || fallbackRun;
-                sk = b.isHit ? 'boss9Down' : (b.throwVisualTimer > 0 ? fallbackThrow : fallbackRun);
+                const fallbackRun = (keys.run && keys.run[0]) || keys.down;
+                const fallbackThrow = (keys.throw && keys.throw[0]) || fallbackRun;
+                sk = b.isHit ? keys.down : (b.throwVisualTimer > 0 ? fallbackThrow : fallbackRun);
             }
         } else {
             sk = b.isHit
