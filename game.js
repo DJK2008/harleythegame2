@@ -122,6 +122,11 @@ let levelScoreStart = 0;
 let worldStep = 0;
 let bossActive = false;
 
+// Laatst gerenderde UI-waarden (voor het vermijden van onnodige DOM-updates)
+let lastRenderedScore = -1;
+let lastRenderedLevel = -1;
+let lastRenderedHp = -1;
+
 // Willekeurig adelaar-geluid tijdens spel (interval 20–50 sec)
 let eagleSoundTimer = 0;
 let nextEagleDelay = 20000 + Math.random() * 30000;
@@ -904,10 +909,27 @@ function resize() {
     const isMobile = window.innerWidth < 1024 || ('ontouchstart' in window);
     const dpr = Math.min(typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1, MAX_DEVICE_PIXEL_RATIO);
     if (isMobile) {
-        canvas.width = Math.min(window.innerWidth, MOBILE_MAX_CANVAS_WIDTH);
-        canvas.height = Math.min(window.innerHeight, MOBILE_MAX_CANVAS_HEIGHT);
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
+        const targetRatio = VIRTUAL_WIDTH / VIRTUAL_HEIGHT;
+        const windowRatio = window.innerWidth / window.innerHeight;
+        let finalWidth, finalHeight;
+
+        if (windowRatio > targetRatio) {
+            // Scherm breder dan target: hoogte begrenzen, breedte afleiden
+            finalHeight = Math.min(window.innerHeight, MOBILE_MAX_CANVAS_HEIGHT);
+            finalWidth = finalHeight * targetRatio;
+        } else {
+            // Scherm smaller dan target: breedte begrenzen, hoogte afleiden
+            finalWidth = Math.min(window.innerWidth, MOBILE_MAX_CANVAS_WIDTH);
+            finalHeight = finalWidth / targetRatio;
+        }
+
+        finalWidth = Math.round(finalWidth);
+        finalHeight = Math.round(finalHeight);
+
+        canvas.width = finalWidth;
+        canvas.height = finalHeight;
+        canvas.style.width = finalWidth + 'px';
+        canvas.style.height = finalHeight + 'px';
     } else {
         canvas.width = Math.round(window.innerWidth * dpr);
         canvas.height = Math.round(window.innerHeight * dpr);
@@ -930,14 +952,11 @@ function drawTinted(spriteCanvas, x, y, w, h, flash) {
     if(!spriteCanvas || !spriteCanvas.width) return;
     ctx.drawImage(spriteCanvas, x, y, w, h);
     if(flash > 0) {
-        tintCanvas.width = spriteCanvas.width; tintCanvas.height = spriteCanvas.height;
-        tintCtx.clearRect(0, 0, tintCanvas.width, tintCanvas.height);
-        tintCtx.drawImage(spriteCanvas, 0, 0);
-        tintCtx.globalCompositeOperation = 'source-in';
-        tintCtx.fillStyle = `rgba(255, 0, 0, ${0.4 + (flash/25)})`;
-        tintCtx.fillRect(0, 0, tintCanvas.width, tintCanvas.height);
-        tintCtx.globalCompositeOperation = 'source-over';
-        ctx.drawImage(tintCanvas, x, y, w, h);
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.fillStyle = `rgba(255, 0, 0, ${0.4 + (flash/25)})`;
+        ctx.fillRect(x, y, w, h);
+        ctx.restore();
     }
 }
 
@@ -1010,6 +1029,11 @@ function resetGame() {
     if (levelAudio.paused) levelAudio.play().catch(() => {});
     soundEagle.currentTime = 0;
     soundEagle.play().catch(() => {});
+
+    // Forceer UI-refresh bij nieuw level
+    lastRenderedScore = -1;
+    lastRenderedLevel = -1;
+    lastRenderedHp = -1;
 }
 
 function getHighScore() {
@@ -1121,8 +1145,15 @@ function update(dt) {
     }
     player.x = Math.max(-50, Math.min((canvas.width/gameScale) - 100, player.x + player.dx));
     player.y = Math.max(-20, Math.min(VIRTUAL_HEIGHT / 1.8, player.y + player.dy));
-    if (els.scoreText) els.scoreText.innerText = score;
-    if (els.levelText) els.levelText.innerText = currentLevel;
+    // Alleen DOM updaten als de waarde daadwerkelijk veranderd is
+    if (score !== lastRenderedScore) {
+        if (els.scoreText) els.scoreText.innerText = score;
+        lastRenderedScore = score;
+    }
+    if (currentLevel !== lastRenderedLevel) {
+        if (els.levelText) els.levelText.innerText = currentLevel;
+        lastRenderedLevel = currentLevel;
+    }
     const sec = dt / 1000;
     Object.keys(player.activeWeapons).forEach(k => {
         if(player.activeWeapons[k] > 0) {
@@ -1145,7 +1176,6 @@ function update(dt) {
             if (p.type.type === 'WEAPON') player.activeWeapons[p.type.weapon] = 8;
             else if (p.type.type === 'HEAL_SMALL') { player.hp = Math.min(100, player.hp + 20); triggerHealVisual(); }
             else if (p.type.type === 'HEAL_FULL') { player.hp = 100; triggerHealVisual(); }
-            if (els.healthBar) els.healthBar.style.width = player.hp + '%';
             powerUps.splice(i,1);
         } else if(p.x < -100) powerUps.splice(i,1);
     }
@@ -1154,7 +1184,6 @@ function update(dt) {
         if(bg.y > VIRTUAL_HEIGHT) { beerGlasses.splice(i,1); continue; }
         if(bg.x > player.x && bg.x < player.x+player.width && bg.y > player.y && bg.y < player.y+player.height) {
             player.hp -= (bg.damage != null ? bg.damage : (5 + (currentLevel-1)*2)); player.hitFlash = 15; beerGlasses.splice(i, 1);
-            if (els.healthBar) els.healthBar.style.width = Math.max(0, player.hp)+'%';
             if(player.hp <= 0) player.isDead = true;
         }
     }
@@ -1176,6 +1205,12 @@ function update(dt) {
             }
         }
         if(hit) poops.splice(i, 1);
+    }
+    // Health-bar alleen updaten als de waarde is veranderd
+    const hpPct = Math.max(0, Math.min(100, player.hp));
+    if (hpPct !== lastRenderedHp) {
+        if (els.healthBar) els.healthBar.style.width = hpPct + '%';
+        lastRenderedHp = hpPct;
     }
     // Spawn supporters / hooligans: verhouding instelbaar via HOOLIGAN_CHANCE_* en SUP_*_SPAWN_WEIGHT
     if (!bossActive && targets.length < 5 && Math.random() < 0.04) {

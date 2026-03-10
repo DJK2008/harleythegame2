@@ -28,6 +28,11 @@ body, html {
 
 canvas { display: block; image-rendering: pixelated; }
 
+#gameCanvas {
+    display: block;
+    margin: 0 auto;
+}
+
 /* Rotatie Overlay */
 #rotate-overlay {
     display: none;
