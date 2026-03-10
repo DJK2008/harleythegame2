@@ -590,6 +590,24 @@ function updateBossUI() {
     if (bar) bar.style.width = (total / (max||1) * 100) + '%';
 }
 
+function updateBurstUI() {
+    const pips = document.getElementById('burst-pips');
+    const reloadBar = document.getElementById('burst-reload-bar');
+    if (!pips || !reloadBar) return;
+    const pipEls = pips.querySelectorAll('.burst-pip');
+    pipEls.forEach((el, i) => {
+        if (i < burstShotsLeft) el.classList.add('full');
+        else el.classList.remove('full');
+    });
+    const now = Date.now();
+    if (reloadUntil > 0 && now < reloadUntil) {
+        const pct = (1 - (reloadUntil - now) / BURST_RELOAD_MS) * 100;
+        reloadBar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+    } else {
+        reloadBar.style.width = '0%';
+    }
+}
+
 function resetGame() {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
     player.hp = 100; player.x = 100; player.y = 150; player.isDead = false; player.hitFlash = 0; player.shootCooldown = 0;
@@ -598,6 +616,7 @@ function resetGame() {
     reloadUntil = 0;
     lastShotTime = 0;
     if (els.fireBtn) els.fireBtn.classList.remove('reloading');
+    updateBurstUI();
     poops = [];
     splatPool.forEach(s => { s.active = false; });
     targets = []; powerUps = []; beerGlasses = []; activeBosses = [];
@@ -696,6 +715,7 @@ function update(dt) {
         burstShotsLeft = BURST_SIZE;
         if (els.fireBtn) els.fireBtn.classList.remove('reloading');
     }
+    updateBurstUI();
     // Willekeurig adelaar-geluid
     eagleSoundTimer += (typeof dt === 'number' ? dt : 16);
     if (eagleSoundTimer >= nextEagleDelay) {
