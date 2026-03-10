@@ -54,15 +54,12 @@ const BASE_WORLD_SPEED = 6;
 const HIGH_SCORE_KEY = 'harley_high_score';
 
 const UNLOCK_ALL_LEVELS_KEY = 'harley_unlock_all_levels';
-const IS_DEBUG_PARAM = new URLSearchParams(window.location.search).has('debug');
 
-// Debug / testknoppen: aan via ?debug of via geheime unlock-code (opgeslagen in localStorage)
 function isDebugEnabled() {
-    if (IS_DEBUG_PARAM) return true;
     try {
         return localStorage.getItem(UNLOCK_ALL_LEVELS_KEY) === '1';
     } catch (e) {
-        return IS_DEBUG_PARAM;
+        return false;
     }
 }
 
@@ -824,7 +821,7 @@ function checkIOS() {
 
 function initDebugUI() {
     if (!els.debugPanel) return;
-    els.debugPanel.style.display = isDebugEnabled() ? 'block' : 'none';
+    els.debugPanel.style.display = isDebugEnabled() ? 'flex' : 'none';
 }
 
 function openExternalUrl(url) {

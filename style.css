@@ -94,7 +94,7 @@ canvas { display: block; image-rendering: pixelated; }
 
 #debug-panel {
     position: absolute; top: 80px; right: 15px; z-index: 50;
-    display: flex; flex-direction: column; gap: 6px; width: 220px; align-items: flex-end;
+    display: none; flex-direction: column; gap: 6px; width: 220px; align-items: flex-end;
 }
 
 .debug-panel-row {
