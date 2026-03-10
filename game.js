@@ -156,8 +156,27 @@ let lowFpsFrameCount = 0;
 let highFpsFrameCount = 0;
 let reduceQuality = false;
 
+const SPLAT_POOL_SIZE = 120;
+const splatPool = Array.from({ length: SPLAT_POOL_SIZE }, () => ({
+    x: 0, y: 0, vx: 0, vy: 0, radius: 0, life: 0, decay: 0.025, active: false
+}));
+
+const SPLAT_CANVAS_SIZE = 32;
+const SPLAT_COLOR = 'rgb(92, 64, 51)'; // vaste kleur; alpha via globalAlpha bij tekenen (geen dynamische rgba-string)
+const splatCanvas = document.createElement('canvas');
+splatCanvas.width = SPLAT_CANVAS_SIZE;
+splatCanvas.height = SPLAT_CANVAS_SIZE;
+(function () {
+    const sc = splatCanvas.getContext('2d');
+    const cx = SPLAT_CANVAS_SIZE / 2;
+    const r = 14;
+    sc.fillStyle = SPLAT_COLOR;
+    sc.beginPath();
+    sc.arc(cx, cx, r, 0, Math.PI * 2);
+    sc.fill();
+})();
+
 let poops = [];
-let splats = [];
 let targets = [];
 let powerUps = [];
 let beerGlasses = [];
@@ -381,7 +400,7 @@ function showLevelUp() {
     cfg.forEach(c => {
         if (!container) return;
         const img = document.createElement('img');
-        img.src = assets[bossDownMap[c]]?.src || assets[c].src;
+        img.src = assets[bossDownMap[c]]?.src || assets[c]?.src || '';
         img.className = 'boss-summary-img';
         container.appendChild(img);
     });
@@ -398,7 +417,7 @@ function showLevelUp() {
             bossContainer.innerHTML = '';
             cfg.forEach(c => {
                 const img = document.createElement('img');
-                img.src = assets[bossDownMap[c]]?.src || assets[c].src;
+                img.src = assets[bossDownMap[c]]?.src || assets[c]?.src || '';
                 img.className = 'boss-summary-img';
                 bossContainer.appendChild(img);
             });
@@ -493,9 +512,25 @@ function drawTinted(spriteCanvas, x, y, w, h, flash) {
 }
 
 function createSplat(x, y, radius, type) {
-    const particles = type === 'BOMB' ? 40 : 15;
+    const particles = type === 'BOMB' ? 20 : 8; // minder partikels (fase 6); cap = poolgrootte
     for (let i = 0; i < particles; i++) {
-        splats.push({ x: x, y: y, vx: (Math.random() - 0.5) * 12, vy: -Math.random() * 8 - 2, radius: Math.random() * (radius/3) + 2, life: 1.0, decay: 0.025 });
+        let slot = splatPool.find(s => !s.active);
+        if (!slot) {
+            const oldest = splatPool.reduce((best, s) => {
+                if (!s.active) return best;
+                return (!best || s.life < best.life) ? s : best;
+            }, null);
+            if (oldest) slot = oldest;
+            else continue;
+        }
+        slot.x = x;
+        slot.y = y;
+        slot.vx = (Math.random() - 0.5) * 12;
+        slot.vy = -Math.random() * 8 - 2;
+        slot.radius = Math.random() * (radius / 3) + 2;
+        slot.life = 1.0;
+        slot.decay = 0.025;
+        slot.active = true;
     }
 }
 
@@ -534,7 +569,9 @@ function resetGame() {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
     player.hp = 100; player.x = 100; player.y = 150; player.isDead = false; player.hitFlash = 0; player.shootCooldown = 0;
     player.activeWeapons = { 'DIARREE': 0, 'POEPBOM': 0 };
-    poops = []; splats = []; targets = []; powerUps = []; beerGlasses = []; activeBosses = [];
+    poops = [];
+    splatPool.forEach(s => { s.active = false; });
+    targets = []; powerUps = []; beerGlasses = []; activeBosses = [];
     bossActive = false; worldStep = 0; gameActive = true;
     eagleSoundTimer = 0;
     nextEagleDelay = 20000 + Math.random() * 30000;
@@ -1000,7 +1037,15 @@ function update(dt) {
             }
         }
     });
-    for(let i=splats.length-1; i>=0; i--) { const s = splats[i]; s.x -= currentEffectiveWorldSpeed; s.y += s.vy; s.vy += 0.5; if(s.y > VIRTUAL_HEIGHT-50) { s.y = VIRTUAL_HEIGHT-50; s.vy = 0; } s.life -= s.decay; if(s.life <= 0) splats.splice(i,1); }
+    for (const s of splatPool) {
+        if (!s.active) continue;
+        s.x -= currentEffectiveWorldSpeed;
+        s.y += s.vy;
+        s.vy += 0.5;
+        if (s.y > VIRTUAL_HEIGHT - 50) { s.y = VIRTUAL_HEIGHT - 50; s.vy = 0; }
+        s.life -= s.decay;
+        if (s.life <= 0) s.active = false;
+    }
     if(!bossActive && (score - levelScoreStart) >= POINTS_TO_BOSS) spawnBoss();
 }
 
@@ -1087,7 +1132,7 @@ function render() {
     
         // Fallback: als gekozen sup A-frame niet geladen is, gebruik een ander geladen sup A-frame
         let drawSk = sk;
-        if (!assets[sk].loaded && SUP_ARENT_KEYS.includes(sk)) {
+        if (assets[sk] && !assets[sk].loaded && SUP_ARENT_KEYS.includes(sk)) {
             drawSk = SUP_ARENT_KEYS.find(k => assets[k].loaded) || sk;
         }
         if (!assets[drawSk]?.loaded && SUP_B_KEYS.includes(sk)) {
@@ -1097,7 +1142,7 @@ function render() {
             const frameIndex = Math.floor(t.animTime || 0) % SUP_C_KEYS.length;
             drawSk = findNearestLoadedFrame(SUP_C_KEYS, frameIndex);
         }
-        if (assets[drawSk].loaded) {
+        if (assets[drawSk] && assets[drawSk].loaded) {
             let sizeScaleX = 1, sizeScaleY = 1;
             if (drawSk === 'normalHit') {
                 sizeScaleX = SUP_A_HIT_SCALE_X; sizeScaleY = SUP_A_HIT_SCALE_Y;
@@ -1279,9 +1324,28 @@ function render() {
         ctx.fillText(p.type.icon, p.x, drawY);
     }
     
-    const splatsToDraw = reduceQuality ? splats.slice(0, MAX_SPLATS_WHEN_REDUCED) : splats;
-    for (const s of splatsToDraw) { ctx.fillStyle = `rgba(92, 64, 51, ${s.life})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, 7); ctx.fill(); }
-    for(let p of poops) { ctx.font = `${p.radius * 2.5}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💩', p.x, p.y); }
+    let splatsDrawn = 0;
+    for (const s of splatPool) {
+        if (!s.active) continue;
+        if (reduceQuality && splatsDrawn >= MAX_SPLATS_WHEN_REDUCED) break;
+        ctx.save();
+        ctx.globalAlpha = s.life; // alpha per partikel; geen fillStyle-string allocatie (fase 3)
+        ctx.drawImage(splatCanvas, 0, 0, SPLAT_CANVAS_SIZE, SPLAT_CANVAS_SIZE, s.x - s.radius, s.y - s.radius, 2 * s.radius, 2 * s.radius);
+        ctx.restore();
+        splatsDrawn++;
+    }
+    const poopImg = assets.poopProjectile;
+    for (const p of poops) {
+        const size = 2 * p.radius;
+        if (poopImg && poopImg.loaded) {
+            ctx.drawImage(poopImg.canvas, p.x - size / 2, p.y - size / 2, size, size);
+        } else {
+            ctx.font = `${p.radius * 2.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('💩', p.x, p.y);
+        }
+    }
     ctx.save();
     
     const hoverY = player.isDead ? 0 : Math.sin(t * 0.8) * 8;
@@ -1326,8 +1390,15 @@ function gameLoop(t) {
             highFpsFrameCount = 0;
         }
     }
-    update(dt);
-    render();
+    try {
+        update(dt);
+        render();
+    } catch (err) {
+        console.error('Game loop error:', err);
+        gameActive = false;
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        if (els.startScreen) els.startScreen.style.display = 'flex';
+    }
 }
 
 window.addEventListener('keydown', (e) => {

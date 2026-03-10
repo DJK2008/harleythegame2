@@ -21,6 +21,7 @@ export const assets = {
         ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10].map(n => ['supC' + n, { src: encodeURI('assets/supC/Persoon_rent_en_is_volledig_in_beeld_zoom_o-' + n + ' (gesleept).png'), canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C run ' + n }])),
         supCDown: { src: 'assets/supC/supC_down.png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter C geraakt' },
         normalHit: { src: 'assets/pecsup1lig_1.png', canvas: document.createElement('canvas'), loaded: false, label: 'Geraakt 1' },
+        poopProjectile: { src: 'assets/poop-projectile.png', canvas: document.createElement('canvas'), loaded: false, label: 'Poep projectiel' },
         groen1: { src: 'assets/supD/groen-1 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 1' },
         groen2: { src: 'assets/supD/groen-2 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 2' },
         groen3: { src: 'assets/supD/groen-3 (gesleept).png', canvas: document.createElement('canvas'), loaded: false, label: 'Supporter D run 3' },
