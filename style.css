@@ -240,6 +240,7 @@ canvas { display: block; image-rendering: pixelated; }
     border: 2px solid #ffcc00;
 }
 
+
 #level-loading-overlay {
     justify-content: center;
     z-index: 150;
