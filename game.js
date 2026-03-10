@@ -144,6 +144,12 @@ let scrollPhase = 'right';   // 'right' | 'wait' | 'left'
 let scrollWaitUntil = 0;    // timestamp wanneer wachten eindigt
 let scrollPhaseWas = 'right'; // na wait: naar 'left' of terug naar 'right'
 
+// Burst-fire: max 5 snelle schoten, daarna even bijladen (performance)
+const BURST_SIZE = 5;
+const BURST_RELOAD_MS = 1000;
+let burstShotsLeft = BURST_SIZE;
+let reloadUntil = 0;  // timestamp wanneer herladen klaar is
+
 // Framerate-detectie: bij lage fps tijdelijk minder zware effecten tekenen
 let fpsHistory = [];
 const FPS_HISTORY_LEN = 30;
@@ -537,6 +543,18 @@ function createSplat(x, y, radius, type) {
 function executePoop(type) {
     if(!gameActive || player.isDead) return;
     if (type === 'NORMAL') {
+        const now = Date.now();
+        if (reloadUntil > 0) {
+            if (now < reloadUntil) return;  // nog aan het herladen
+            reloadUntil = 0;
+            burstShotsLeft = BURST_SIZE;
+        }
+        if (burstShotsLeft <= 0) {
+            reloadUntil = now + BURST_RELOAD_MS;
+            if (els.fireBtn) els.fireBtn.classList.add('reloading');
+            return;
+        }
+        burstShotsLeft--;
         soundPoop.currentTime = 0;
         soundPoop.play().catch(() => {});
     } else if (type === 'POEPBOM') {
@@ -569,6 +587,9 @@ function resetGame() {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
     player.hp = 100; player.x = 100; player.y = 150; player.isDead = false; player.hitFlash = 0; player.shootCooldown = 0;
     player.activeWeapons = { 'DIARREE': 0, 'POEPBOM': 0 };
+    burstShotsLeft = BURST_SIZE;
+    reloadUntil = 0;
+    if (els.fireBtn) els.fireBtn.classList.remove('reloading');
     poops = [];
     splatPool.forEach(s => { s.active = false; });
     targets = []; powerUps = []; beerGlasses = []; activeBosses = [];
@@ -661,6 +682,12 @@ function update(dt) {
         if(keys['Space'] && player.shootCooldown <= 0) { executePoop('NORMAL'); player.shootCooldown = 15; }
     }
     if(player.shootCooldown > 0) player.shootCooldown--;
+    // Burst herladen: na BURST_RELOAD_MS weer 5 schoten beschikbaar
+    if (reloadUntil > 0 && Date.now() >= reloadUntil) {
+        reloadUntil = 0;
+        burstShotsLeft = BURST_SIZE;
+        if (els.fireBtn) els.fireBtn.classList.remove('reloading');
+    }
     // Willekeurig adelaar-geluid
     eagleSoundTimer += (typeof dt === 'number' ? dt : 16);
     if (eagleSoundTimer >= nextEagleDelay) {
@@ -735,9 +762,10 @@ function update(dt) {
         lastRenderedLevel = currentLevel;
     }
     const sec = dt / 1000;
+    const WEAPON_DECAY_FACTOR = 2; // diarree/poepbom timer loopt 2x zo snel (4 sec i.p.v. 8)
     Object.keys(player.activeWeapons).forEach(k => {
         if(player.activeWeapons[k] > 0) {
-            player.activeWeapons[k] -= sec;
+            player.activeWeapons[k] -= sec * WEAPON_DECAY_FACTOR;
             let btn = weaponButtons[k];
             if(btn) { btn.classList.add('active'); btn.querySelector('.timer-overlay').style.height = (player.activeWeapons[k] / 8 * 100) + '%'; if(player.activeWeapons[k] <= 0) btn.classList.remove('active'); }
         }

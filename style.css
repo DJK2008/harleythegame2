@@ -178,6 +178,9 @@ canvas { display: block; image-rendering: pixelated; }
     color: white; font-size: clamp(12px, 2.8vw, 18px); font-weight: bold; pointer-events: auto; cursor: pointer;
     box-shadow: 0 6px 0 #800;
 }
+.main-btn.reloading {
+    opacity: 0.5; background: #666; border-color: #888; cursor: not-allowed; pointer-events: none;
+}
 
 .intro-image {
     max-width: 400px;
