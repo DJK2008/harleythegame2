@@ -157,19 +157,25 @@ canvas { display: block; image-rendering: pixelated; }
 #action-group { display: flex; flex-direction: column; align-items: flex-end; gap: 15px; pointer-events: none; }
 .weapon-cluster { display: flex; gap: 10px; pointer-events: auto; }
 
+/* SPRAY / BOM: schaal mee met viewport (klein op telefoon, max op groot scherm) */
 .special-btn {
-    width: 80px; height: 80px; background: #444; border: 3px solid #777; border-radius: 50%;
+    width: clamp(56px, 12vw, 90px);
+    height: clamp(56px, 12vw, 90px);
+    background: #444; border: 3px solid #777; border-radius: 50%;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: #fff; font-size: 10px; font-weight: bold; opacity: 0.4; position: relative; overflow: hidden;
+    color: #fff; font-size: clamp(8px, 2vw, 12px); font-weight: bold; opacity: 0.4; position: relative; overflow: hidden;
 }
 
 .special-btn.active { background: #f0f; border-color: #fff; opacity: 1; pointer-events: auto; box-shadow: 0 4px 0 #606; }
 .timer-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.5); height: 0%; pointer-events: none; }
 
+/* SCHIJT-knop: schaal mee met viewport */
 .main-btn {
-    width: 110px; height: 110px; background: var(--danger-red); border: 4px solid var(--action-yellow);
+    width: clamp(80px, 16vw, 120px);
+    height: clamp(80px, 16vw, 120px);
+    background: var(--danger-red); border: 4px solid var(--action-yellow);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 18px; font-weight: bold; pointer-events: auto; cursor: pointer;
+    color: white; font-size: clamp(12px, 2.8vw, 18px); font-weight: bold; pointer-events: auto; cursor: pointer;
     box-shadow: 0 6px 0 #800;
 }
 

@@ -39,6 +39,20 @@ const HIGH_SCORE_KEY = 'harley_high_score';
 
 const IS_DEBUG = new URLSearchParams(window.location.search).has('debug');
 
+// --- GoatCounter analytics helpers ---
+function trackEvent(path, title, vars) {
+    if (!window.goatcounter || !window.goatcounter.count) return;
+    try {
+        window.goatcounter.count(Object.assign({
+            path: path,
+            title: title,
+            event: true
+        }, vars || {}));
+    } catch (e) {
+        // Analytics failures mogen de game nooit breken
+    }
+}
+
 // Cache DOM elements (avoid repeated getElementById in hot paths)
 const els = {
     bossHealthBar: document.getElementById('boss-health-bar'),
@@ -787,13 +801,20 @@ function openExternalUrl(url) {
 function initExternalLinks() {
     document.querySelectorAll('[data-open-url]').forEach((el) => {
         const url = el.getAttribute('data-open-url');
+        const isBeerButton = el.classList && el.classList.contains('paypal-btn');
         el.addEventListener('pointerdown', (e) => {
             e.preventDefault();
+            if (isBeerButton) {
+                trackEvent('/cta/koop-bier', 'KOOP BIER klik (pointer)');
+            }
             openExternalUrl(url);
         }, { passive: false });
         el.addEventListener('click', (e) => {
             if (Date.now() - lastTouchTs < 600) return;
             e.preventDefault();
+            if (isBeerButton) {
+                trackEvent('/cta/koop-bier', 'KOOP BIER klik (click)');
+            }
             openExternalUrl(url);
         });
     });
@@ -879,6 +900,8 @@ function showLevelUp() {
     gameActive = false; levelAudio.pause(); levelAudio.currentTime = 0;
     winAudio.play().catch(() => {});
     const cfg = levelBossConfig[currentLevel];
+    // Analytics: level gehaald
+    trackEvent('/level/complete/' + currentLevel, 'Level ' + currentLevel + ' gehaald');
     if (els.levelUpText) els.levelUpText.innerText = cfg.map(c => (assets[c] && assets[c].name) || BOSS_NAMES[c] || c).join(" en ") + " verslagen.";
     const container = els.bossSummaryContainer;
     if (container) container.innerHTML = '';
@@ -1070,6 +1093,9 @@ function resetGame() {
     lastRenderedScore = -1;
     lastRenderedLevel = -1;
     lastRenderedHp = -1;
+
+    // Analytics: level gestart
+    trackEvent('/level/start/' + currentLevel, 'Level ' + currentLevel + ' gestart');
 }
 
 function getHighScore() {
