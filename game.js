@@ -102,6 +102,7 @@ const els = {
     levelText: document.getElementById('level-text'),
     levelUpScreen: document.getElementById('level-up-screen'),
     levelUpText: document.getElementById('level-up-text'),
+    levelUpScore: document.getElementById('level-up-score'),
     levelLoadingOverlay: document.getElementById('level-loading-overlay'),
     levelLoadingText: document.getElementById('level-loading-text'),
     levelLoadingBar: document.getElementById('level-loading-bar'),
@@ -950,7 +951,16 @@ function showLevelUp() {
     const cfg = levelBossConfig[currentLevel];
     // Analytics: level gehaald
     trackEvent('/level/complete/' + currentLevel, 'Level ' + currentLevel + ' gehaald');
-    if (els.levelUpText) els.levelUpText.innerText = cfg.map(c => (assets[c] && assets[c].name) || BOSS_NAMES[c] || c).join(" en ") + " verslagen.";
+    if (els.levelUpText) {
+        els.levelUpText.innerText = cfg.map(c => (assets[c] && assets[c].name) || BOSS_NAMES[c] || c).join(" en ") + " verslagen.";
+    }
+    // Duidelijke beloning: toon behaalde punten in dit level
+    const levelDelta = Math.max(0, score - levelScoreStart);
+    if (els.levelUpScore) {
+        els.levelUpScore.textContent = levelDelta > 0
+            ? `+${levelDelta} punten in dit level`
+            : '';
+    }
     const container = els.bossSummaryContainer;
     if (container) container.innerHTML = '';
     cfg.forEach(c => {
