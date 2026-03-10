@@ -177,9 +177,7 @@ const levelBossConfig = {
     7: ['boss5'],
     8: ['boss7'],                     // nieuwe eindbaas level 8 (Refs)
     9: ['boss8'],                     // Super Hooligan – eindbaas level 9
-    10: ['boss1','boss2','boss5'],
-    11: ['boss1','boss5','boss3'],
-    12: ['boss2','boss3','boss5']
+    10: ['boss9']                     // Eindeindbaas – laatste eindbaas level 10
 };
 
 // --- Snelheid-instellingen (makkelijk aanpasbaar) ---
@@ -211,7 +209,8 @@ const BOSS_CONFIG = {
     boss5: { width: 250, height: 350, scale: 1.6, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.8, throwDamage: 8 }, // Dominguez
     boss6: { width: 275, height: 380, scale: 1.2, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.65, throwDamage: 5 }, // ME – gooit stok
     boss7: { width: 320, height: 380, scale: 1.5, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 4, throwTimeToTarget: 60,  throwHitChance: 0.7, throwDamage: 6 },  // Refs – eindbaas level 8 (gooit 4 diamonds)
-    boss8: { width: 320, height: 400, scale: 1.5, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 55,  throwHitChance: 0.75, throwDamage: 7 }   // Super Hooligan – eindbaas level 9 (gooit fakkel)
+    boss8: { width: 320, height: 400, scale: 1.5, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 55,  throwHitChance: 0.75, throwDamage: 7 },  // Super Hooligan – eindbaas level 9 (gooit fakkel)
+    boss9: { width: 360, height: 420, scale: 1.6, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 3, throwTimeToTarget: 65,  throwHitChance: 0.8,  throwDamage: 8 }   // Eindeindbaas – laatste eindbaas level 10
 };
 function getBossConfig(type) {
     return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 50, throwHitChance: 0.7, throwDamage: 6 };
@@ -506,7 +505,28 @@ const assets = {
             label: 'Super Hooligan gooit ' + n
         }
     ])),
-    boss8Down: { src: encodeURI('assets/superhool/down/superhool down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 8 Down' }
+    boss8Down: { src: encodeURI('assets/superhool/down/superhool down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 8 Down' },
+
+    // Eindeindbaas – laatste eindbaas level 10 (assets/eindeindbaas/lopen, gooien, down)
+    ...Object.fromEntries([1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(n => [
+        'eindeindRun' + n,
+        {
+            src: encodeURI(`assets/eindeindbaas/lopen/Laat_hem_naar_links_lopen_voor_5_seconden-${n} (gesleept).png`),
+            canvas: document.createElement('canvas'),
+            loaded: false,
+            label: 'Eindeindbaas loopt ' + n
+        }
+    ])),
+    ...Object.fromEntries([1,2,3,4,5,6,7,8,9,10,11,12].map(n => [
+        'eindeindThrow' + n,
+        {
+            src: encodeURI(`assets/eindeindbaas/gooien/Laat_het_game_karakter_boos_naar_links_lopen-${n} (gesleept).png`),
+            canvas: document.createElement('canvas'),
+            loaded: false,
+            label: 'Eindeindbaas gooit ' + n
+        }
+    ])),
+    boss9Down: { src: encodeURI('assets/eindeindbaas/down/eindeindbaas down.png'), canvas: document.createElement('canvas'), loaded: false, label: 'Boss 9 Down' }
 };
 
 const HOOLI_RUN_KEYS = ['hooliRun1', 'hooliRun2', 'hooliRun3', 'hooliRun4', 'hooliRun5'];
@@ -531,6 +551,8 @@ const REFS_RUN_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14].map(n => 'refsRun' + n)
 const REFS_THROW_KEYS = [1,2,3,4,5,6,7].map(n => 'refsThrow' + n);
 const SUPERHOOL_RUN_KEYS = [1,2,3,4,5,6,7,8,9].map(n => 'superhoolRun' + n);
 const SUPERHOOL_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(n => 'superhoolThrow' + n);
+const EINDEIND_RUN_KEYS = [1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20].map(n => 'eindeindRun' + n);
+const EINDEIND_THROW_KEYS = [1,2,3,4,5,6,7,8,9,10,11,12].map(n => 'eindeindThrow' + n);
 const SUP_ARENT_KEYS = Array.from({ length: 72 }, (_, i) => 'supA' + (i + 1));
 const SUP_B_KEYS = Array.from({ length: 28 }, (_, i) => 'supB' + (i + 1));
 const SUP_C_KEYS = Array.from({ length: 10 }, (_, i) => 'supC' + (i + 1));
@@ -566,6 +588,7 @@ const PROJECTILE_FONT_SIZE = {
     GLOVE: 56,
     BALL: 40,
     HAMBURGER: 52,
+    FRIES: 60,
     BRICK: 44,
     STONE: 28,
     STICK: 36,
@@ -573,8 +596,8 @@ const PROJECTILE_FONT_SIZE = {
     TORCH: 44
 };
 
-const bossDownMap = { boss0: 'clownDown1', boss1: 'zwolfDown1', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down', boss5: 'boss5Down', boss6: 'boss6Down', boss7: 'boss7Down', boss8: 'boss8Down' };
-const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3: 'Bram', boss4: 'Peperbus', boss5: 'Dominguez', boss6: 'ME', boss7: 'Refs', boss8: 'Super Hooligan' };
+const bossDownMap = { boss0: 'clownDown1', boss1: 'zwolfDown1', boss2: 'boss2Down', boss3: 'boss3Down', boss4: 'boss4Down', boss5: 'boss5Down', boss6: 'boss6Down', boss7: 'boss7Down', boss8: 'boss8Down', boss9: 'boss9Down' };
+const BOSS_NAMES = { boss0: 'Clown', boss1: 'Zwolfje', boss2: 'Diederik', boss3: 'Bram', boss4: 'Peperbus', boss5: 'Dominguez', boss6: 'ME', boss7: 'Refs', boss8: 'Super Hooligan', boss9: 'Eindeindbaas' };
 
 // Level-specifieke assets: per level de bg + alle bazen van dat level
 const BOSS_ASSET_KEYS = {
@@ -586,7 +609,8 @@ const BOSS_ASSET_KEYS = {
     boss5: [...DOM_RUN_KEYS, ...DOM_THROW_KEYS, 'boss5Eat', 'boss5Down'],
     boss6: [...ME_RUN_KEYS, ...ME_THROW_KEYS, 'boss6Down'],
     boss7: [...REFS_RUN_KEYS, ...REFS_THROW_KEYS, 'boss7Down'],
-    boss8: [...SUPERHOOL_RUN_KEYS, ...SUPERHOOL_THROW_KEYS, 'boss8Down']
+    boss8: [...SUPERHOOL_RUN_KEYS, ...SUPERHOOL_THROW_KEYS, 'boss8Down'],
+    boss9: [...EINDEIND_RUN_KEYS, ...EINDEIND_THROW_KEYS, 'boss9Down']
 };
 
 function getLevelAssetKeys(level) {
@@ -597,7 +621,7 @@ function getLevelAssetKeys(level) {
 }
 
 const LEVEL_SPECIFIC_KEYS = new Set();
-for (let l = 1; l <= 12; l++) getLevelAssetKeys(l).forEach(k => LEVEL_SPECIFIC_KEYS.add(k));
+for (let l = 1; l <= 10; l++) getLevelAssetKeys(l).forEach(k => LEVEL_SPECIFIC_KEYS.add(k));
 
 const CORE_ASSET_KEYS = Object.keys(assets).filter(k => !LEVEL_SPECIFIC_KEYS.has(k));
 
@@ -808,7 +832,7 @@ function spawnBoss() {
         laneIndex: i,
         targetX: laneCenters[i],
         ...(t === 'boss0' || t === 'boss1' ? { animTime: 0, downAnimTime: 0 } : {}),
-        ...(t === 'boss2' || t === 'boss3' || t === 'boss4' || t === 'boss5' || t === 'boss6' || t === 'boss7' || t === 'boss8' ? { animTime: 0 } : {})
+        ...(t === 'boss2' || t === 'boss3' || t === 'boss4' || t === 'boss5' || t === 'boss6' || t === 'boss7' || t === 'boss8' || t === 'boss9' ? { animTime: 0 } : {})
     };
     });
 
@@ -1311,9 +1335,11 @@ function update(dt) {
                                     ? 'DIAMOND'
                                     : (b.type === 'boss8'
                                         ? 'TORCH'
-                                        : (b.type === 'boss1' || b.type === 'boss4'
-                                            ? 'BRICK'
-                                            : 'STONE'))))));
+                                        : (b.type === 'boss9'
+                                            ? 'FRIES'
+                                            : (b.type === 'boss1' || b.type === 'boss4'
+                                                ? 'BRICK'
+                                                : 'STONE')))))));
     
                 if (!b.eatVisualTimer || b.eatVisualTimer <= 0) {
                     const bc = getBossConfig(b.type);
@@ -1387,6 +1413,10 @@ function update(dt) {
                 b.animTime = (b.animTime || 0) + 0.25;
             }
         } else if (b.type === 'boss8') {
+            if (!b.isHit) {
+                b.animTime = (b.animTime || 0) + 0.25;
+            }
+        } else if (b.type === 'boss9') {
             if (!b.isHit) {
                 b.animTime = (b.animTime || 0) + 0.25;
             }
@@ -1678,6 +1708,22 @@ function render() {
                 const fallbackRun = SUPERHOOL_RUN_KEYS[0] || 'boss8Down';
                 const fallbackThrow = SUPERHOOL_THROW_KEYS[0] || fallbackRun;
                 sk = b.isHit ? 'boss8Down' : (b.throwVisualTimer > 0 ? fallbackThrow : fallbackRun);
+            }
+        } else if (b.type === 'boss9') {
+            if (b.isHit) {
+                sk = 'boss9Down';
+            } else if (b.throwVisualTimer > 0) {
+                const throwProgress = 1 - (b.throwVisualTimer / 35);
+                const throwFrame = Math.min(Math.floor(throwProgress * EINDEIND_THROW_KEYS.length), EINDEIND_THROW_KEYS.length - 1);
+                sk = EINDEIND_THROW_KEYS[throwFrame];
+            } else {
+                const loopFrame = Math.floor(b.animTime || 0) % EINDEIND_RUN_KEYS.length;
+                sk = EINDEIND_RUN_KEYS[loopFrame];
+            }
+            if (!assets[sk] || !assets[sk].loaded) {
+                const fallbackRun = EINDEIND_RUN_KEYS[0] || 'boss9Down';
+                const fallbackThrow = EINDEIND_THROW_KEYS[0] || fallbackRun;
+                sk = b.isHit ? 'boss9Down' : (b.throwVisualTimer > 0 ? fallbackThrow : fallbackRun);
             }
         } else {
             sk = b.isHit
