@@ -251,6 +251,16 @@ canvas { display: block; image-rendering: pixelated; }
     border: 2px solid #ffcc00;
 }
 
+/* Instellingen: acties onder elkaar en even breed */
+#settings-modal .menu-btn {
+    width: 320px;
+    max-width: 100%;
+    display: block;
+}
+#settings-modal .paypal-btn {
+    width: 320px;
+}
+
 
 #level-loading-overlay {
     justify-content: center;
