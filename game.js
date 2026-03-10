@@ -50,6 +50,7 @@ const els = {
     finalScore: document.getElementById('final-score'),
     fireBtn: document.getElementById('fire-btn'),
     gameOverScreen: document.getElementById('game-over-screen'),
+    gameOverTitle: document.getElementById('game-over-title'),
     gameContainer: document.getElementById('game-container'),
     healthBar: document.getElementById('health-bar'),
     healthContainer: document.getElementById('health-container'),
@@ -858,6 +859,7 @@ function showLevelUp() {
     const isLastLevel = currentLevel >= 10;
     if (isLastLevel) {
         if (els.levelUpScreen) els.levelUpScreen.style.display = 'none';
+        if (els.gameOverTitle) els.gameOverTitle.textContent = 'Spel uitgespeeld!';
         if (els.finalScore) els.finalScore.innerText = score;
         const newHigh = setHighScore(score);
         const highEl = document.getElementById('high-score-value');
@@ -1007,6 +1009,7 @@ function update(dt) {
             levelAudio.currentTime = 0;
             gameOverAudio.play().catch(() => {});
 
+            if (els.gameOverTitle) els.gameOverTitle.textContent = 'Eagle down.';
             if (els.finalScore) els.finalScore.innerText = score;
 
             const newHigh = setHighScore(score);
