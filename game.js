@@ -210,7 +210,7 @@ const BOSS_CONFIG = {
     boss6: { width: 275, height: 380, scale: 1.2, speed: 2.5, downScale: 0.8,    downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 50,  throwHitChance: 0.65, throwDamage: 5 }, // ME – gooit stok
     boss7: { width: 320, height: 380, scale: 1.5, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 4, throwTimeToTarget: 60,  throwHitChance: 0.7, throwDamage: 6 },  // Refs – eindbaas level 8 (gooit 4 diamonds)
     boss8: { width: 320, height: 400, scale: 1.5, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 1, throwTimeToTarget: 55,  throwHitChance: 0.75, throwDamage: 7 },  // Super Hooligan – eindbaas level 9 (gooit fakkel)
-    boss9: { width: 360, height: 420, scale: 1.6, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: true, throwCount: 3, throwTimeToTarget: 65,  throwHitChance: 0.8,  throwDamage: 8 }   // Eindeindbaas – laatste eindbaas level 10
+    boss9: { width: 360, height: 420, scale: 1.5, speed: 2.5, downScale: 0.85,   downOffset: 0, offset: 0,  mirrorFlip: false, throwCount: 3, throwTimeToTarget: 65,  throwHitChance: 0.8,  throwDamage: 8 }   // Eindeindbaas – laatste eindbaas level 10
 };
 function getBossConfig(type) {
     return BOSS_CONFIG[type] || { width: 250, height: 350, scale: 1, speed: 2.5, downScale: 1, downOffset: 0, offset: 0, mirrorFlip: false, throwCount: 1, throwTimeToTarget: 50, throwHitChance: 0.7, throwDamage: 6 };
