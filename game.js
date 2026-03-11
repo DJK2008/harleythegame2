@@ -93,6 +93,7 @@ const els = {
     highscoreNameModal: document.getElementById('highscore-name-modal'),
     highscoreNameInput: document.getElementById('highscore-name-input'),
     highscoreNameSubmit: document.getElementById('highscore-name-submit'),
+    closeGameBtn: document.getElementById('close-game-btn'),
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -1636,6 +1637,18 @@ bind('settings-btn', () => {
         if (els.musicValue) els.musicValue.textContent = musicVal + '%';
         if (els.sfxValue) els.sfxValue.textContent = sfxVal + '%';
     });
+});
+bind('close-game-btn', () => {
+    // Sluit de game door het hoofdcontainer te verbergen
+    if (els.gameContainer) {
+        els.gameContainer.style.display = 'none';
+    }
+    // Probeer eventueel het venster/tabblad te sluiten als dat is toegestaan
+    try {
+        window.close();
+    } catch (e) {
+        // Negeer fouten; niet alle browsers staan dit toe
+    }
 });
 bind('close-settings-btn', () => { if (els.settingsModal) els.settingsModal.style.display = 'none'; });
 bind('highscores-btn', () => {
