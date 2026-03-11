@@ -23,6 +23,7 @@ import {
     PROJECTILE_FONT_SIZE, BOSS_PROJECTILE_TYPE, GENERIC_BOSS_ANIM_KEYS, SIMPLE_ANIM_BOSSES, bossDownMap, BOSS_NAMES
 } from './js/config.js';
 import { assets, preloadCore, loadLevelAssets } from './js/assets.js';
+import { submitGlobalScore, getTopScores } from './js/firebase-service.js';
 
 (() => {
 
@@ -86,6 +87,12 @@ const els = {
     sfxValue: document.getElementById('sfx-value'),
     closeSettingsBtn: document.getElementById('close-settings-btn'),
     unlockCodeBtn: document.getElementById('unlock-code-btn'),
+    highscoresModal: document.getElementById('highscores-modal'),
+    highscoresList: document.getElementById('highscores-list'),
+    closeHighscoresBtn: document.getElementById('close-highscores-btn'),
+    highscoreNameModal: document.getElementById('highscore-name-modal'),
+    highscoreNameInput: document.getElementById('highscore-name-input'),
+    highscoreNameSubmit: document.getElementById('highscore-name-submit'),
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -435,8 +442,9 @@ function showLevelUp() {
         const highEl = document.getElementById('high-score-value');
         if (highEl) highEl.innerText = newHigh;
         const lineEl = document.getElementById('high-score-line');
-        if (lineEl) lineEl.style.display = 'block';
+            if (lineEl) lineEl.style.display = 'block';
         if (els.gameOverScreen) els.gameOverScreen.style.display = 'flex';
+        onGameOverShown(score);
     } else {
         if (els.levelUpScreen) els.levelUpScreen.style.display = 'flex';
     }
@@ -636,6 +644,7 @@ function resetGame() {
     if (els.healthBar) els.healthBar.style.width = '100%';
     if (els.bossHealthContainer) els.bossHealthContainer.style.display = 'none';
     if (els.gameOverScreen) els.gameOverScreen.style.display = 'none';
+    if (els.highscoreNameModal) els.highscoreNameModal.style.display = 'none';
     if (els.levelUpScreen) els.levelUpScreen.style.display = 'none';
     ['DIARREE', 'POEPBOM'].forEach(k => {
         const btn = weaponButtons[k];
@@ -674,6 +683,41 @@ function setHighScore(score) {
     return current;
 }
 
+let pendingHighscoreScore = 0;
+
+async function displayHighscoresInModal() {
+    const listEl = els.highscoresList;
+    if (!listEl) return;
+    listEl.innerHTML = '<li style="list-style:none;">Laden...</li>';
+    try {
+        const scores = await getTopScores(50);
+        listEl.innerHTML = '';
+        if (scores.length === 0) {
+            listEl.innerHTML = '<li style="list-style:none;">Nog geen scores.</li>';
+            return;
+        }
+        scores.forEach((entry, i) => {
+            const li = document.createElement('li');
+            li.textContent = `${entry.name}: ${entry.score}`;
+            listEl.appendChild(li);
+        });
+    } catch (e) {
+        listEl.innerHTML = '<li style="list-style:none;">Scorebord laden mislukt.</li>';
+    }
+}
+
+function onGameOverShown(score) {
+    if (score > 0) {
+        pendingHighscoreScore = score;
+        if (els.highscoreNameModal) els.highscoreNameModal.style.display = 'flex';
+        if (els.highscoreNameInput) {
+            els.highscoreNameInput.value = '';
+            els.highscoreNameInput.placeholder = 'Je naam';
+            setTimeout(() => els.highscoreNameInput.focus(), 100);
+        }
+    }
+}
+
 function update(dt) {
     if(!gameActive) return;
     if(player.hitFlash > 0) player.hitFlash--;
@@ -700,6 +744,7 @@ function update(dt) {
             if (lineEl) lineEl.style.display = 'block';
 
             if (els.gameOverScreen) els.gameOverScreen.style.display = 'flex';
+            onGameOverShown(score);
         }
         return;
     }
@@ -1554,6 +1599,11 @@ bind('restart-btn', async () => {
     setTimeout(resize, 300);
     resetGame(); lastTime = 0; animationFrameId = requestAnimationFrame(gameLoop); 
 });
+bind('back-to-start-btn', () => {
+    if (els.gameOverScreen) els.gameOverScreen.style.display = 'none';
+    if (els.highscoreNameModal) els.highscoreNameModal.style.display = 'none';
+    if (els.startScreen) els.startScreen.style.display = 'flex';
+});
 bind('continue-btn', async () => { 
     // Na level 10 is het spel uitgespeeld: geen volgend level meer
     if (currentLevel >= 10) {
@@ -1588,6 +1638,27 @@ bind('settings-btn', () => {
     });
 });
 bind('close-settings-btn', () => { if (els.settingsModal) els.settingsModal.style.display = 'none'; });
+bind('highscores-btn', () => {
+    if (els.highscoresModal) {
+        els.highscoresModal.style.display = 'flex';
+        displayHighscoresInModal();
+    }
+});
+bind('close-highscores-btn', () => { if (els.highscoresModal) els.highscoresModal.style.display = 'none'; });
+function submitHighscoreName() {
+    const name = (els.highscoreNameInput && els.highscoreNameInput.value.trim()) || 'Anoniem';
+    if (pendingHighscoreScore > 0) {
+        submitGlobalScore(name, pendingHighscoreScore).catch(() => {});
+    }
+    if (els.highscoreNameModal) els.highscoreNameModal.style.display = 'none';
+    if (els.highscoreNameInput) els.highscoreNameInput.value = '';
+}
+bind('highscore-name-submit', submitHighscoreName);
+if (els.highscoreNameInput) {
+    els.highscoreNameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); submitHighscoreName(); }
+    });
+}
 bind('ios-later-btn', () => { if (els.iosModal) els.iosModal.style.display = 'none'; });
 if (els.unlockCodeBtn) {
     els.unlockCodeBtn.addEventListener('click', async () => {

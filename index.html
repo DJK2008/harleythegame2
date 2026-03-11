@@ -89,6 +89,7 @@
         <button id="start-btn" class="menu-btn" disabled>START MISSIE</button>
         <button id="info-btn" class="menu-btn">INFO</button>
         <button id="settings-btn" class="menu-btn">INSTELLINGEN</button>
+        <button id="highscores-btn" class="menu-btn">🏆 HIGHSCORES</button>
     </div>
 
     <div id="settings-modal">
@@ -109,6 +110,7 @@
         </div>
     </div>
 
+    
     <div id="info-modal">
         <div class="modal-content">
             <h2>Missie: Operatie IJssel-Reiniging</h2>
@@ -121,10 +123,28 @@
             PEC-supporters klagen al jaren dat ze in de zeik worden genomen. Vandaag voegen we daar de vaste materie aan toe. Huilende Zwollenaren met een gekwetst ego kunnen hun emotionele incontinentie direct in de Peperbus lozen.</p>
             <p><strong>Wel gevoel voor humor en vind je dit leuk?</strong><br>
             Steun dan de maker door een biertje voor hem te kopen.
-            <button class="menu-btn paypal-btn" data-open-url="https://www.paypal.com/ncp/payment/QJPXDDQ9U34N2">KOOP BIER</button>
+            <button class="menu-btn paypal-btn" data-open-url="https://www.paypal.com/ncp/payment/QJPXDDQ9U34N2">🍻 KOOP BIER</button>
             <p style="margin-top:20px; font-size:14px;">Complimenten of bedreigingen? Contact:<br>
             <a href="mailto:koweteagle@gmail.com" style="color:var(--action-yellow)">koweteagle@gmail.com</a></p>
             <button id="close-info-btn" class="menu-btn" style="background:#555; margin-top:20px;">SLUITEN</button>
+        </div>
+    </div>
+
+    <div id="highscores-modal" style="display:none">
+        <div class="modal-content">
+            <img src="assets/eagle%20highscore.png" alt="Highscore Adelaar" class="highscore-eagle-image">
+            <h2>🏆 Top 50 Highscores</h2>
+            <ol id="highscores-list" class="highscores-list"></ol>
+            <button id="close-highscores-btn" class="menu-btn" style="background:#555; margin-top:20px;">SLUITEN</button>
+        </div>
+    </div>
+
+    <div id="highscore-name-modal" style="display:none">
+        <div class="modal-content highscore-name-content">
+            <h2>🏆 Highscore! 🏆</h2>
+            <p>Je hebt een highscore gehaald. Schrijf je naam zodat iedereen ziet wat voor schijterd je bent!</p>
+            <input type="text" id="highscore-name-input" class="highscore-name-input" placeholder="Je naam" maxlength="30" autocomplete="off">
+            <button id="highscore-name-submit" class="menu-btn" style="margin-top:16px;">OPSLAAN</button>
         </div>
     </div>
 
@@ -135,6 +155,7 @@
         <div id="high-score-line" class="high-score-line">BESTE SCORE: <span id="high-score-value">0</span></div>
         <div id="game-over-boss-container"></div>
         <button id="restart-btn" class="menu-btn">OPNIEUW PROBEREN</button>
+        <button id="back-to-start-btn" class="menu-btn" style="background:#555; box-shadow: 4px 4px 0 #333;">TERUG NAAR BEGIN</button>
         
         <div id="donation-box">
             <p style="font-size: 14px; margin: 0;">Vond je dit leuk? Ondersteun de maker, koop bier.</p>
