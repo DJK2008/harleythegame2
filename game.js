@@ -1639,16 +1639,9 @@ bind('settings-btn', () => {
     });
 });
 bind('close-game-btn', () => {
-    // Sluit de game door het hoofdcontainer te verbergen
-    if (els.gameContainer) {
-        els.gameContainer.style.display = 'none';
-    }
-    // Probeer eventueel het venster/tabblad te sluiten als dat is toegestaan
-    try {
-        window.close();
-    } catch (e) {
-        // Negeer fouten; niet alle browsers staan dit toe
-    }
+    // iOS "Zet op beginscherm" (standalone) kan een webapp niet programmatically sluiten.
+    // In plaats daarvan: pauzeer alles en ga terug naar startscherm zodat er geen zwart scherm achterblijft.
+    exitToStartScreen({ attemptClose: true });
 });
 bind('close-settings-btn', () => { if (els.settingsModal) els.settingsModal.style.display = 'none'; });
 bind('highscores-btn', () => {
@@ -1686,6 +1679,62 @@ if (els.unlockCodeBtn) {
             alert('Ongeldige code.');
         }
     });
+}
+
+function isStandaloneDisplayMode() {
+    try {
+        // iOS Safari
+        if (window.navigator && window.navigator.standalone) return true;
+        // Overige browsers / PWA
+        if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    } catch (e) {}
+    return false;
+}
+
+function stopAllAudio() {
+    try { levelAudio.pause(); } catch (e) {}
+    try { winAudio.pause(); } catch (e) {}
+    try { gameOverAudio.pause(); } catch (e) {}
+    try { soundEagle.pause(); } catch (e) {}
+    try { soundPoop.pause(); } catch (e) {}
+    try { soundBom.pause(); } catch (e) {}
+    try { soundSpray.pause(); } catch (e) {}
+}
+
+function exitToStartScreen(options = {}) {
+    const { attemptClose = false } = options;
+
+    // Stop loop en markeer inactief
+    gameActive = false;
+    if (animationFrameId != null) {
+        try { cancelAnimationFrame(animationFrameId); } catch (e) {}
+        animationFrameId = null;
+    }
+    stopAllAudio();
+
+    // Sluit modals/overlays die anders "vast" kunnen blijven hangen
+    if (els.infoModal) els.infoModal.style.display = 'none';
+    if (els.settingsModal) els.settingsModal.style.display = 'none';
+    if (els.highscoresModal) els.highscoresModal.style.display = 'none';
+    if (els.highscoreNameModal) els.highscoreNameModal.style.display = 'none';
+    if (els.gameOverScreen) els.gameOverScreen.style.display = 'none';
+    if (els.levelUpScreen) els.levelUpScreen.style.display = 'none';
+    if (els.levelLoadingOverlay) els.levelLoadingOverlay.style.display = 'none';
+
+    // Belangrijk: container NIET verbergen (dat veroorzaakt zwart scherm in iOS standalone)
+    if (els.gameContainer) els.gameContainer.style.display = '';
+    if (els.startScreen) els.startScreen.style.display = 'flex';
+
+    // Alleen proberen te sluiten als het géén standalone webapp is.
+    // (Zelfs dan lukt window.close() alleen als het venster via script geopend is.)
+    if (attemptClose && !isStandaloneDisplayMode()) {
+        try { window.close(); } catch (e) {}
+    } else if (attemptClose && isStandaloneDisplayMode()) {
+        // Geef een minimale hint; iOS standalone kan niet dicht via code.
+        try {
+            alert('Sluiten kan op iOS niet via het kruisje. Swipe omhoog (App Switcher) om de app te sluiten.');
+        } catch (e) {}
+    }
 }
 
 async function startLevel(n) {
