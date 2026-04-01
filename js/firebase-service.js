@@ -23,12 +23,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const SCORES_COLLECTION = 'highscores';
 
-/**
- * Submits a score to the global leaderboard.
- * @param {string} name - Player name
- * @param {number} score - Score value
- * @returns {Promise<void>}
- */
 export async function submitGlobalScore(name, score) {
     try {
         await addDoc(collection(db, SCORES_COLLECTION), {
@@ -41,11 +35,6 @@ export async function submitGlobalScore(name, score) {
     }
 }
 
-/**
- * Fetches the top scores from the global leaderboard.
- * @param {number} [limitCount=50] - Maximum number of scores to return
- * @returns {Promise<Array<{name: string, score: number}>>}
- */
 export async function getTopScores(limitCount = 50) {
     try {
         const q = query(
