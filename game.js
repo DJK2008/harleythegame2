@@ -1,5 +1,7 @@
 'use strict';
 
+console.log("🔥 Harley V2.1 (Performance + Juice) geladen!");
+
 import {
     BACKGROUND_URL, LEVEL_START_AUDIO_URL, LEVEL_WIN_AUDIO_URL, LEVEL_GAMEOVER_AUDIO_URL,
     LEVEL_MUSIC_URL, SILENT_AUDIO_URL, UNLOCK_CODE_HASH, SOUND_EAGLE_URL, SOUND_POOP_URL, SOUND_BOM_URL, SOUND_SPRAY_URL,
@@ -130,6 +132,8 @@ let scrollPhase = 'right'; let scrollWaitUntil = 0; let scrollPhaseWas = 'right'
 const BURST_SIZE = 5; const BURST_RELOAD_MS = 1000; const BURST_RESET_MS = 2500;
 let burstShotsLeft = BURST_SIZE; let reloadUntil = 0; let lastShotTime = 0; 
 let fpsHistory = []; let lowFpsFrameCount = 0; let highFpsFrameCount = 0; let reduceQuality = false;
+
+// === Geoptimaliseerde Object Pools voor maximale snelheid ===
 const SPLAT_POOL_SIZE = 120;
 const splatPool = Array.from({ length: SPLAT_POOL_SIZE }, () => ({ x: 0, y: 0, vx: 0, vy: 0, radius: 0, life: 0, decay: 0.025, active: false }));
 const SPLAT_CANVAS_SIZE = 32; const SPLAT_COLOR = 'rgb(92, 64, 51)';
@@ -139,37 +143,36 @@ const splatCanvas = document.createElement('canvas'); splatCanvas.width = SPLAT_
     sc.fillStyle = SPLAT_COLOR; sc.beginPath(); sc.arc(cx, cx, r, 0, Math.PI * 2); sc.fill();
 })();
 
-// === VISUAL JUICE VARIABLES ===
-let screenShakeTime = 0;
-let screenShakeIntensity = 0;
-let floatingTexts = [];
-let feathers = [];
+const TEXT_POOL_SIZE = 20;
+const textPool = Array.from({ length: TEXT_POOL_SIZE }, () => ({ x: 0, y: 0, text: '', color: '', life: 0, vy: 0, active: false }));
+
+const FEATHER_POOL_SIZE = 40;
+const featherPool = Array.from({ length: FEATHER_POOL_SIZE }, () => ({ x: 0, y: 0, vx: 0, vy: 0, life: 0, angle: 0, spinSpeed: 0, active: false }));
+
+const featherCanvas = document.createElement('canvas');
+featherCanvas.width = 40; featherCanvas.height = 40;
+(function() {
+    const fCtx = featherCanvas.getContext('2d');
+    fCtx.font = '36px Arial';
+    fCtx.textAlign = 'center';
+    fCtx.textBaseline = 'middle';
+    fCtx.fillText('🪶', 20, 20);
+})();
 
 let poops = []; let targets = []; let powerUps = []; let beerGlasses = []; let activeBosses = [];
 
 const player = { x: 100, y: 150, width: 240, height: 100, speed: 15, dx: 0, dy: 0, hp: 100, hitFlash: 0, isDead: false, fallSpeed: 0, facing: 1, activeWeapons: { 'DIARREE': 0, 'POEPBOM': 0 }, shootCooldown: 0 };
 const weaponButtons = { 'DIARREE': document.getElementById('btn-DIARREE'), 'POEPBOM': document.getElementById('btn-POEPBOM') };
 
-// === VISUAL JUICE FUNCTIES ===
-function triggerScreenShake(duration, intensity) {
-    screenShakeTime = duration;
-    screenShakeIntensity = intensity;
-}
-
 function spawnFloatingText(x, y, text, color = '#ff0000') {
-    floatingTexts.push({ x, y, text, color, life: 1.5, vy: -3 });
+    let slot = textPool.find(t => !t.active);
+    if (slot) { slot.x = x; slot.y = y; slot.text = text; slot.color = color; slot.life = 1.5; slot.vy = -3; slot.active = true; }
 }
 
 function spawnFeathers(x, y, count) {
     for(let i=0; i<count; i++) {
-        feathers.push({
-            x, y, 
-            vx: (Math.random()-0.5)*15, 
-            vy: (Math.random()*-8)-2, 
-            life: 1, 
-            angle: Math.random()*Math.PI*2, 
-            spinSpeed: (Math.random()-0.5)*0.3
-        });
+        let slot = featherPool.find(f => !f.active);
+        if (slot) { slot.x = x; slot.y = y; slot.vx = (Math.random()-0.5)*15; slot.vy = (Math.random()*-8)-2; slot.life = 1; slot.angle = Math.random()*Math.PI*2; slot.spinSpeed = (Math.random()-0.5)*0.3; slot.active = true; }
     }
 }
 
@@ -410,8 +413,8 @@ function updateBurstUI() {
 function resetGame() {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
     
-    // JUICE Reset
-    screenShakeTime = 0; floatingTexts = []; feathers = [];
+    textPool.forEach(t => t.active = false);
+    featherPool.forEach(f => f.active = false);
 
     player.hp = 100; player.x = 100; player.y = 150; player.isDead = false; player.hitFlash = 0; player.shootCooldown = 0; player.fallSpeed = 0;
     player.activeWeapons = { 'DIARREE': 0, 'POEPBOM': 0 };
@@ -463,9 +466,6 @@ function update(dt) {
     const canvasWidthScaled = canvas.width / gameScale;
     
     const ts = dt / 16.66667; 
-    
-    // JUICE: Update screen shake timer
-    if (screenShakeTime > 0) screenShakeTime -= dt;
 
     if(player.hitFlash > 0) player.hitFlash -= 1 * ts;
     activeBosses.forEach(b => { if (b.hitFlash > 0) b.hitFlash -= 1 * ts; });
@@ -539,24 +539,22 @@ function update(dt) {
     player.x = Math.max(-50, Math.min(canvasWidthScaled - 100, player.x + player.dx * ts));
     player.y = Math.max(-20, Math.min(VIRTUAL_HEIGHT / 1.8, player.y + player.dy * ts));
     
-    // JUICE: Update damage numbers
-    for (let i = floatingTexts.length - 1; i >= 0; i--) {
-        let ft = floatingTexts[i];
+    for (let ft of textPool) {
+        if (!ft.active) continue;
         ft.x -= currentEffectiveWorldSpeed * ts;
         ft.y += ft.vy * ts;
         ft.life -= 0.02 * ts;
-        if (ft.life <= 0) floatingTexts.splice(i, 1);
+        if (ft.life <= 0) ft.active = false;
     }
 
-    // JUICE: Update feathers
-    for (let i = feathers.length - 1; i >= 0; i--) {
-        let f = feathers[i];
+    for (let f of featherPool) {
+        if (!f.active) continue;
         f.x += (f.vx - currentEffectiveWorldSpeed) * ts;
         f.y += f.vy * ts;
         f.vy += 0.2 * ts;
         f.angle += f.spinSpeed * ts;
         f.life -= 0.015 * ts;
-        if (f.life <= 0) feathers.splice(i, 1);
+        if (f.life <= 0) f.active = false;
     }
 
     if (score !== lastRenderedScore) { if (els.scoreText) els.scoreText.innerText = score; lastRenderedScore = score; }
@@ -593,9 +591,7 @@ function update(dt) {
             player.hitFlash = 15; 
             beerGlasses.splice(i, 1);
             
-            // JUICE: Hit effect
             spawnFeathers(player.x + player.width/2, player.y + player.height/2, 10);
-            triggerScreenShake(150, 10);
             
             if(player.hp <= 0) player.isDead = true;
         }
@@ -605,9 +601,6 @@ function update(dt) {
         if(p.y > VIRTUAL_HEIGHT - 65) {
             createSplat(p.x, VIRTUAL_HEIGHT - 50, p.radius, p.type);
             if(p.type === 'BOMB') {
-                // JUICE: Bomb hits ground
-                triggerScreenShake(300, 15);
-                
                 targets.forEach(t => { if(!t.isHit && Math.abs(p.x-t.x) < 250) { 
                     t.isHit = true; t.hitTime = now; score += 200; 
                     spawnFloatingText(t.x + 65, t.y, 'K.O.', '#ffff00');
@@ -633,7 +626,6 @@ function update(dt) {
                     spawnFloatingText(b.x + b.width/2, b.y + b.height/2, `-${dmg}`, '#ff0000');
                     if(b.hp <= 0) { 
                         b.isHit = true; score += 1000; 
-                        triggerScreenShake(500, 20); // JUICE: Boss dead
                         if(activeBosses.every(x=>x.isHit)) setTimeout(showLevelUp, 1500); 
                     } break; 
                 }
@@ -759,13 +751,6 @@ function findNearestLoadedFrame(keys, index) {
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save(); ctx.scale(gameScale, gameScale);
-    
-    // JUICE: Apply Screen Shake BEFORE drawing the world
-    if (screenShakeTime > 0) {
-        const shakeX = (Math.random() - 0.5) * screenShakeIntensity;
-        const shakeY = (Math.random() - 0.5) * screenShakeIntensity;
-        ctx.translate(shakeX, shakeY);
-    }
 
     const bgKey = LEVEL_BG_KEYS[currentLevel] || 'background';
     const bgAsset = assets[bgKey];
@@ -910,39 +895,33 @@ function render() {
     if (eagleAsset && eagleAsset.loaded) drawTinted(eagleAsset.canvas, -player.width/2, -player.height/2, player.width, player.height, player.hitFlash);
     ctx.restore(); 
 
-    // JUICE: Draw Feathers
+    // JUICE: Draw Feathers met Object Pool en Offscreen Canvas
     ctx.save();
-    ctx.font = '36px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    for (const f of feathers) {
-        ctx.globalAlpha = Math.max(0, f.life);
+    for (const f of featherPool) {
+        if (!f.active) continue;
+        ctx.globalAlpha = Math.max(0, Math.min(1, f.life));
         ctx.save();
         ctx.translate(Math.round(f.x), Math.round(f.y));
         ctx.rotate(f.angle);
-        ctx.fillText('🪶', 0, 0);
+        ctx.drawImage(featherCanvas, -20, -20);
         ctx.restore();
     }
     ctx.restore();
 
-    // JUICE: Draw Floating Texts (Damage Numbers)
+    // JUICE: Draw Floating Texts zonder strokeText
     ctx.save();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = 'bold 44px Arial';
-    ctx.lineWidth = 4;
-    for (const ft of floatingTexts) {
-        ctx.globalAlpha = Math.max(0, ft.life);
-        // Stroke voor leesbaarheid
-        ctx.strokeStyle = '#000000';
-        ctx.strokeText(ft.text, Math.round(ft.x), Math.round(ft.y));
-        // Gekleurde tekst
+    for (const ft of textPool) {
+        if (!ft.active) continue;
+        ctx.globalAlpha = Math.max(0, Math.min(1, ft.life));
         ctx.fillStyle = ft.color;
         ctx.fillText(ft.text, Math.round(ft.x), Math.round(ft.y));
     }
     ctx.restore();
 
-    ctx.restore(); // Eindigt de main camera/shake
+    ctx.restore();
     if(gameActive) animationFrameId = requestAnimationFrame(gameLoop);
 }
 
