@@ -27,8 +27,6 @@ import { submitGlobalScore, getTopScores } from './js/firebase-service.js';
 
 (() => {
 
-// === Android/Mobile Context Menu Preventie ===
-// Zorgt ervoor dat "Afbeelding opslaan" of "Tekst kopiëren" popups niet verschijnen bij ingedrukt houden
 window.addEventListener('contextmenu', e => e.preventDefault());
 
 let musicVolume = getStoredVolume(VOLUME_STORAGE_KEY_MUSIC, DEFAULT_VOLUME_MUSIC);
@@ -73,13 +71,11 @@ const tintCanvas = document.createElement('canvas');
 const tintCtx = tintCanvas.getContext('2d', { willReadFrequently: true });
 const bgImg = new Image(); 
    
-// === Audio Setup (HTML5 Audio for music/jingles) ===
 const levelAudio = new Audio(LEVEL_START_AUDIO_URL); levelAudio.loop = true;
 const silentUnlockAudio = new Audio(SILENT_AUDIO_URL);
 const winAudio = new Audio(LEVEL_WIN_AUDIO_URL);
 const gameOverAudio = new Audio(LEVEL_GAMEOVER_AUDIO_URL);
 
-// === Web Audio API Setup (For fast, non-stuttering SFX) ===
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const sfxGain = audioCtx.createGain();
@@ -115,21 +111,14 @@ function applyVolumes() {
 }
 applyVolumes(); 
 
-// === Wake Lock API Setup (Houdt scherm aan op Android) ===
 let wakeLock = null;
 async function requestWakeLock() {
     if ('wakeLock' in navigator) {
-        try {
-            wakeLock = await navigator.wakeLock.request('screen');
-        } catch (err) {
-            console.warn('Wake Lock error:', err);
-        }
+        try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { console.warn('Wake Lock error:', err); }
     }
 }
 document.addEventListener('visibilitychange', async () => {
-    if (wakeLock !== null && document.visibilityState === 'visible' && gameActive) {
-        await requestWakeLock();
-    }
+    if (wakeLock !== null && document.visibilityState === 'visible' && gameActive) await requestWakeLock();
 });
 
 let gameScale = 1; let lastTime = 0; let gameActive = false; let animationFrameId = null;
@@ -149,10 +138,40 @@ const splatCanvas = document.createElement('canvas'); splatCanvas.width = SPLAT_
     const sc = splatCanvas.getContext('2d'); const cx = SPLAT_CANVAS_SIZE / 2; const r = 14;
     sc.fillStyle = SPLAT_COLOR; sc.beginPath(); sc.arc(cx, cx, r, 0, Math.PI * 2); sc.fill();
 })();
+
+// === VISUAL JUICE VARIABLES ===
+let screenShakeTime = 0;
+let screenShakeIntensity = 0;
+let floatingTexts = [];
+let feathers = [];
+
 let poops = []; let targets = []; let powerUps = []; let beerGlasses = []; let activeBosses = [];
 
 const player = { x: 100, y: 150, width: 240, height: 100, speed: 15, dx: 0, dy: 0, hp: 100, hitFlash: 0, isDead: false, fallSpeed: 0, facing: 1, activeWeapons: { 'DIARREE': 0, 'POEPBOM': 0 }, shootCooldown: 0 };
 const weaponButtons = { 'DIARREE': document.getElementById('btn-DIARREE'), 'POEPBOM': document.getElementById('btn-POEPBOM') };
+
+// === VISUAL JUICE FUNCTIES ===
+function triggerScreenShake(duration, intensity) {
+    screenShakeTime = duration;
+    screenShakeIntensity = intensity;
+}
+
+function spawnFloatingText(x, y, text, color = '#ff0000') {
+    floatingTexts.push({ x, y, text, color, life: 1.5, vy: -3 });
+}
+
+function spawnFeathers(x, y, count) {
+    for(let i=0; i<count; i++) {
+        feathers.push({
+            x, y, 
+            vx: (Math.random()-0.5)*15, 
+            vy: (Math.random()*-8)-2, 
+            life: 1, 
+            angle: Math.random()*Math.PI*2, 
+            spinSpeed: (Math.random()-0.5)*0.3
+        });
+    }
+}
 
 function loadAsset(key, options = {}) {
     const { onProgress, totalForProgress, timeoutMs = 60000, silentFail = false } = options;
@@ -226,10 +245,7 @@ async function hashStringSHA256(str) {
 }
 
 async function verifyUnlockCode(input) {
-    if (input.toUpperCase() === 'KOWET') {
-        alert('Adelaars vliegen altijd hoger! Succes zondag! 🔴🟡');
-        return true;
-    }
+    if (input.toUpperCase() === 'KOWET') { alert('Adelaars vliegen altijd hoger! Succes zondag! 🔴🟡'); return true; }
     const hash = await hashStringSHA256(input.trim());
     return hash && hash === UNLOCK_CODE_HASH;
 }
@@ -393,6 +409,10 @@ function updateBurstUI() {
 
 function resetGame() {
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    
+    // JUICE Reset
+    screenShakeTime = 0; floatingTexts = []; feathers = [];
+
     player.hp = 100; player.x = 100; player.y = 150; player.isDead = false; player.hitFlash = 0; player.shootCooldown = 0; player.fallSpeed = 0;
     player.activeWeapons = { 'DIARREE': 0, 'POEPBOM': 0 };
     burstShotsLeft = BURST_SIZE; reloadUntil = 0; lastShotTime = 0;
@@ -442,9 +462,11 @@ function update(dt) {
     if(!gameActive) return;
     const canvasWidthScaled = canvas.width / gameScale;
     
-    // DELTA TIME FACTOR (1.0 at 60FPS)
     const ts = dt / 16.66667; 
     
+    // JUICE: Update screen shake timer
+    if (screenShakeTime > 0) screenShakeTime -= dt;
+
     if(player.hitFlash > 0) player.hitFlash -= 1 * ts;
     activeBosses.forEach(b => { if (b.hitFlash > 0) b.hitFlash -= 1 * ts; });
     if(player.isDead) {
@@ -517,6 +539,26 @@ function update(dt) {
     player.x = Math.max(-50, Math.min(canvasWidthScaled - 100, player.x + player.dx * ts));
     player.y = Math.max(-20, Math.min(VIRTUAL_HEIGHT / 1.8, player.y + player.dy * ts));
     
+    // JUICE: Update damage numbers
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        let ft = floatingTexts[i];
+        ft.x -= currentEffectiveWorldSpeed * ts;
+        ft.y += ft.vy * ts;
+        ft.life -= 0.02 * ts;
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
+    }
+
+    // JUICE: Update feathers
+    for (let i = feathers.length - 1; i >= 0; i--) {
+        let f = feathers[i];
+        f.x += (f.vx - currentEffectiveWorldSpeed) * ts;
+        f.y += f.vy * ts;
+        f.vy += 0.2 * ts;
+        f.angle += f.spinSpeed * ts;
+        f.life -= 0.015 * ts;
+        if (f.life <= 0) feathers.splice(i, 1);
+    }
+
     if (score !== lastRenderedScore) { if (els.scoreText) els.scoreText.innerText = score; lastRenderedScore = score; }
     if (currentLevel !== lastRenderedLevel) { if (els.levelText) els.levelText.innerText = currentLevel; lastRenderedLevel = currentLevel; }
     const sec = dt / 1000; const WEAPON_DECAY_FACTOR = 2;
@@ -547,7 +589,14 @@ function update(dt) {
         const bg = beerGlasses[i]; bg.x += (bg.vx - currentEffectiveWorldSpeed) * ts; bg.y += bg.vy * ts; bg.vy += 0.45 * ts;
         if(bg.y > VIRTUAL_HEIGHT) { beerGlasses.splice(i,1); continue; }
         if(bg.x > player.x && bg.x < player.x+player.width && bg.y > player.y && bg.y < player.y+player.height) {
-            player.hp -= (bg.damage != null ? bg.damage : (5 + (currentLevel-1)*2)); player.hitFlash = 15; beerGlasses.splice(i, 1);
+            player.hp -= (bg.damage != null ? bg.damage : (5 + (currentLevel-1)*2)); 
+            player.hitFlash = 15; 
+            beerGlasses.splice(i, 1);
+            
+            // JUICE: Hit effect
+            spawnFeathers(player.x + player.width/2, player.y + player.height/2, 10);
+            triggerScreenShake(150, 10);
+            
             if(player.hp <= 0) player.isDead = true;
         }
     }
@@ -556,16 +605,38 @@ function update(dt) {
         if(p.y > VIRTUAL_HEIGHT - 65) {
             createSplat(p.x, VIRTUAL_HEIGHT - 50, p.radius, p.type);
             if(p.type === 'BOMB') {
-                targets.forEach(t => { if(!t.isHit && Math.abs(p.x-t.x) < 250) { t.isHit = true; t.hitTime = now; score += 200; }});
-                activeBosses.forEach(b => { if(!b.isHit && Math.abs(p.x-b.x) < 250) { b.hp -= 4; b.hitFlash = 15; updateBossUI(); }});
+                // JUICE: Bomb hits ground
+                triggerScreenShake(300, 15);
+                
+                targets.forEach(t => { if(!t.isHit && Math.abs(p.x-t.x) < 250) { 
+                    t.isHit = true; t.hitTime = now; score += 200; 
+                    spawnFloatingText(t.x + 65, t.y, 'K.O.', '#ffff00');
+                }});
+                activeBosses.forEach(b => { if(!b.isHit && Math.abs(p.x-b.x) < 250) { 
+                    b.hp -= 4; b.hitFlash = 15; updateBossUI(); 
+                    spawnFloatingText(b.x + b.width/2, b.y + b.height/2, '-4', '#ff0000');
+                }});
             }
             poops.splice(i, 1); continue;
         }
         let hit = false;
-        for(let t of targets) if(!t.isHit && p.x > t.x && p.x < t.x+130 && p.y > VIRTUAL_HEIGHT-250) { t.isHit = true; t.hitTime = now; score += 100; hit = true; break; }
+        for(let t of targets) if(!t.isHit && p.x > t.x && p.x < t.x+130 && p.y > VIRTUAL_HEIGHT-250) { 
+            t.isHit = true; t.hitTime = now; score += 100; hit = true; 
+            spawnFloatingText(t.x + 65, t.y, 'K.O.', '#ffff00');
+            break; 
+        }
         if(!hit) {
             for(let b of activeBosses) {
-                if(!b.isHit && p.x > b.x && p.x < b.x+b.width && p.y > b.y && p.y < b.y+b.height) { b.hp -= 1; b.hitFlash = 15; updateBossUI(); hit = true; if(b.hp <= 0) { b.isHit = true; score += 1000; if(activeBosses.every(x=>x.isHit)) setTimeout(showLevelUp, 1500); } break; }
+                if(!b.isHit && p.x > b.x && p.x < b.x+b.width && p.y > b.y && p.y < b.y+b.height) { 
+                    let dmg = p.type === 'BOMB' ? 4 : 1;
+                    b.hp -= dmg; b.hitFlash = 15; updateBossUI(); hit = true; 
+                    spawnFloatingText(b.x + b.width/2, b.y + b.height/2, `-${dmg}`, '#ff0000');
+                    if(b.hp <= 0) { 
+                        b.isHit = true; score += 1000; 
+                        triggerScreenShake(500, 20); // JUICE: Boss dead
+                        if(activeBosses.every(x=>x.isHit)) setTimeout(showLevelUp, 1500); 
+                    } break; 
+                }
             }
         }
         if(hit) poops.splice(i, 1);
@@ -688,6 +759,14 @@ function findNearestLoadedFrame(keys, index) {
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save(); ctx.scale(gameScale, gameScale);
+    
+    // JUICE: Apply Screen Shake BEFORE drawing the world
+    if (screenShakeTime > 0) {
+        const shakeX = (Math.random() - 0.5) * screenShakeIntensity;
+        const shakeY = (Math.random() - 0.5) * screenShakeIntensity;
+        ctx.translate(shakeX, shakeY);
+    }
+
     const bgKey = LEVEL_BG_KEYS[currentLevel] || 'background';
     const bgAsset = assets[bgKey];
     if (bgAsset && bgAsset.loaded && bgAsset.canvas.height > 0) {
@@ -829,7 +908,41 @@ function render() {
     const eagleAnimKeys = ['eagleAnim1', 'eagleAnim2', 'eagleAnim3', 'eagleAnim4'];
     const eagleAsset = player.isDead ? assets.eagle : (isMoving ? assets[eagleAnimKeys[frameIndex]] : assets.eagle);
     if (eagleAsset && eagleAsset.loaded) drawTinted(eagleAsset.canvas, -player.width/2, -player.height/2, player.width, player.height, player.hitFlash);
-    ctx.restore(); ctx.restore();
+    ctx.restore(); 
+
+    // JUICE: Draw Feathers
+    ctx.save();
+    ctx.font = '36px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const f of feathers) {
+        ctx.globalAlpha = Math.max(0, f.life);
+        ctx.save();
+        ctx.translate(Math.round(f.x), Math.round(f.y));
+        ctx.rotate(f.angle);
+        ctx.fillText('🪶', 0, 0);
+        ctx.restore();
+    }
+    ctx.restore();
+
+    // JUICE: Draw Floating Texts (Damage Numbers)
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = 'bold 44px Arial';
+    ctx.lineWidth = 4;
+    for (const ft of floatingTexts) {
+        ctx.globalAlpha = Math.max(0, ft.life);
+        // Stroke voor leesbaarheid
+        ctx.strokeStyle = '#000000';
+        ctx.strokeText(ft.text, Math.round(ft.x), Math.round(ft.y));
+        // Gekleurde tekst
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, Math.round(ft.x), Math.round(ft.y));
+    }
+    ctx.restore();
+
+    ctx.restore(); // Eindigt de main camera/shake
     if(gameActive) animationFrameId = requestAnimationFrame(gameLoop);
 }
 
@@ -882,7 +995,6 @@ const bind = (id, fn) => {
     el.addEventListener('click', (e) => { if (performance.now() - lastTouchTs < 600) return; e.preventDefault(); fn(); });
 };
 
-// Derby Countdown Logica
 function updateDerbyCountdown() {
     if (!els.derbyCountdown) return;
     const derbyDate = new Date('April 5, 2026 14:30:00').getTime();
@@ -904,7 +1016,6 @@ function updateDerbyCountdown() {
 setInterval(updateDerbyCountdown, 1000);
 updateDerbyCountdown();
 
-// WhatsApp Deel Logica
 if (els.whatsappShareBtn) {
     els.whatsappShareBtn.addEventListener('click', () => {
         const text = `Ik ben aan het warmdraaien voor de IJsselderby! 🦅💩 Mijn score in Harley the Game is ${score}. Kan jij beter? Speel het hier: ${window.location.href}`;
@@ -916,7 +1027,7 @@ bind('start-btn', async () => {
     if(gameActive) return; 
     
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    await requestWakeLock(); // Vraag Wake Lock aan zodra de speler op Start klikt
+    await requestWakeLock();
     
     silentUnlockAudio.currentTime = 0; silentUnlockAudio.play().catch(() => {});
     levelAudio.play().catch(() => {}); levelAudio.pause(); levelAudio.currentTime = 0;
@@ -995,7 +1106,6 @@ function exitToStartScreen(options = {}) {
     gameActive = false;
     if (animationFrameId != null) { try { cancelAnimationFrame(animationFrameId); } catch (e) {} animationFrameId = null; }
     
-    // Geef Wake Lock weer netjes vrij als de speler stopt
     if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
 
     stopAllAudio();
