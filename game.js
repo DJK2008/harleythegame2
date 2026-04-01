@@ -27,6 +27,10 @@ import { submitGlobalScore, getTopScores } from './js/firebase-service.js';
 
 (() => {
 
+// === Android/Mobile Context Menu Preventie ===
+// Zorgt ervoor dat "Afbeelding opslaan" of "Tekst kopiëren" popups niet verschijnen bij ingedrukt houden
+window.addEventListener('contextmenu', e => e.preventDefault());
+
 let musicVolume = getStoredVolume(VOLUME_STORAGE_KEY_MUSIC, DEFAULT_VOLUME_MUSIC);
 let sfxVolume = getStoredVolume(VOLUME_STORAGE_KEY_SFX, DEFAULT_VOLUME_SFX);
 
@@ -60,6 +64,7 @@ const els = {
     highscoresList: document.getElementById('highscores-list'), closeHighscoresBtn: document.getElementById('close-highscores-btn'),
     highscoreNameModal: document.getElementById('highscore-name-modal'), highscoreNameInput: document.getElementById('highscore-name-input'),
     highscoreNameSubmit: document.getElementById('highscore-name-submit'), closeGameBtn: document.getElementById('close-game-btn'),
+    whatsappShareBtn: document.getElementById('whatsapp-share-btn'), derbyCountdown: document.getElementById('derby-countdown')
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -90,7 +95,6 @@ async function loadSfxBuffer(url, key) {
     } catch(e) { console.warn("Failed to load audio:", url); }
 }
 
-// Load the buffers
 loadSfxBuffer(SOUND_EAGLE_URL, 'eagle');
 loadSfxBuffer(SOUND_POOP_URL, 'poop');
 loadSfxBuffer(SOUND_BOM_URL, 'bom');
@@ -107,9 +111,26 @@ function playSfx(key) {
 
 function applyVolumes() {
     levelAudio.volume = musicVolume; winAudio.volume = musicVolume; gameOverAudio.volume = musicVolume;
-    sfxGain.gain.value = sfxVolume; // Web Audio API master volume
+    sfxGain.gain.value = sfxVolume;
 }
 applyVolumes(); 
+
+// === Wake Lock API Setup (Houdt scherm aan op Android) ===
+let wakeLock = null;
+async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+        } catch (err) {
+            console.warn('Wake Lock error:', err);
+        }
+    }
+}
+document.addEventListener('visibilitychange', async () => {
+    if (wakeLock !== null && document.visibilityState === 'visible' && gameActive) {
+        await requestWakeLock();
+    }
+});
 
 let gameScale = 1; let lastTime = 0; let gameActive = false; let animationFrameId = null;
 let joystickActive = false; let joystickPointerId = null; const keys = {};
@@ -205,6 +226,10 @@ async function hashStringSHA256(str) {
 }
 
 async function verifyUnlockCode(input) {
+    if (input.toUpperCase() === 'KOWET') {
+        alert('Adelaars vliegen altijd hoger! Succes zondag! 🔴🟡');
+        return true;
+    }
     const hash = await hashStringSHA256(input.trim());
     return hash && hash === UNLOCK_CODE_HASH;
 }
@@ -810,7 +835,6 @@ function render() {
 
 function gameLoop(t) {
     if (!lastTime) lastTime = t;
-    // Cap dt op max 50ms om clipping/hickups te voorkomen als het tabblad verborgen is
     const dt = Math.min(50, Math.max(0, t - lastTime)); lastTime = t;
     if (dt > 0) {
         fpsHistory.push(1000 / dt); if (fpsHistory.length > FPS_HISTORY_LEN) fpsHistory.shift();
@@ -858,11 +882,41 @@ const bind = (id, fn) => {
     el.addEventListener('click', (e) => { if (performance.now() - lastTouchTs < 600) return; e.preventDefault(); fn(); });
 };
 
+// Derby Countdown Logica
+function updateDerbyCountdown() {
+    if (!els.derbyCountdown) return;
+    const derbyDate = new Date('April 5, 2026 14:30:00').getTime();
+    const now = new Date().getTime();
+    const distance = derbyDate - now;
+
+    if (distance < 0) {
+        els.derbyCountdown.innerHTML = "DE DERBY IS BEGONNEN!";
+        return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    els.derbyCountdown.innerHTML = `Derby start in: ${days}d ${hours}u ${minutes}m ${seconds}s`;
+}
+setInterval(updateDerbyCountdown, 1000);
+updateDerbyCountdown();
+
+// WhatsApp Deel Logica
+if (els.whatsappShareBtn) {
+    els.whatsappShareBtn.addEventListener('click', () => {
+        const text = `Ik ben aan het warmdraaien voor de IJsselderby! 🦅💩 Mijn score in Harley the Game is ${score}. Kan jij beter? Speel het hier: ${window.location.href}`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    });
+}
+
 bind('start-btn', async () => { 
     if(gameActive) return; 
     
-    // Resumeer AudioContext bij de eerste interactie (Browser beleid)
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    await requestWakeLock(); // Vraag Wake Lock aan zodra de speler op Start klikt
     
     silentUnlockAudio.currentTime = 0; silentUnlockAudio.play().catch(() => {});
     levelAudio.play().catch(() => {}); levelAudio.pause(); levelAudio.currentTime = 0;
@@ -935,12 +989,15 @@ function isStandaloneDisplayMode() { try { if (window.navigator && window.naviga
 
 function stopAllAudio() {
     [levelAudio, winAudio, gameOverAudio].forEach(a => { try { a.pause(); } catch (e) {} });
-    // De Web Audio context stoppen hoeft niet, we spelen gewoon geen nieuwe buffers af
 }
 
 function exitToStartScreen(options = {}) {
     gameActive = false;
     if (animationFrameId != null) { try { cancelAnimationFrame(animationFrameId); } catch (e) {} animationFrameId = null; }
+    
+    // Geef Wake Lock weer netjes vrij als de speler stopt
+    if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
+
     stopAllAudio();
     [els.infoModal, els.settingsModal, els.highscoresModal, els.highscoreNameModal, els.gameOverScreen, els.levelUpScreen, els.levelLoadingOverlay].forEach(el => { if(el) el.style.display = 'none'; });
     if (els.gameContainer) els.gameContainer.style.display = '';
@@ -950,6 +1007,7 @@ function exitToStartScreen(options = {}) {
 
 async function startLevel(n) {
     if (!isDebugEnabled()) return;
+    await requestWakeLock();
     await loadLevelAssets(n, { els, updateLevelProgress: updateLevelLoadingProgress, addFailedAsset });
     currentLevel = n; levelScoreStart = (n - 1) * POINTS_TO_BOSS; score = levelScoreStart; resetGame();
     if (els.startScreen) els.startScreen.style.display = 'none';
@@ -958,6 +1016,7 @@ async function startLevel(n) {
 
 async function forceLevel(n) {
     if (!isDebugEnabled()) return;
+    await requestWakeLock();
     await loadLevelAssets(n, { els, updateLevelProgress: updateLevelLoadingProgress, addFailedAsset });
     currentLevel = n; levelScoreStart = (n - 1) * POINTS_TO_BOSS; score = levelScoreStart + POINTS_TO_BOSS; resetGame(); 
     if (els.startScreen) els.startScreen.style.display = 'none';
@@ -967,7 +1026,6 @@ async function forceLevel(n) {
 if (isDebugEnabled()) { window.forceLevel = forceLevel; window.startLevel = startLevel; }
 
 window.addEventListener('load', () => {
-    // PWA Service Worker registeren
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('Service Worker registratie mislukt:', err));
     }
