@@ -21,19 +21,17 @@ body, html {
     height: 100dvh; 
     background: #000000; 
     overflow: hidden;
-    /* Performance: GPU-laag voor soepelere animatie op mobiel */
     will-change: transform;
     transform: translateZ(0);
 }
 
-canvas { display: block; image-rendering: pixelated; }
+canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 
 #gameCanvas {
     display: block;
     margin: 0 auto;
 }
 
-/* Rotatie Overlay */
 #rotate-overlay {
     display: none;
     position: fixed;
@@ -49,7 +47,6 @@ canvas { display: block; image-rendering: pixelated; }
 
 .rotate-message { font-size: 20px; padding: 20px; }
 
-/* Algemene Overlay Styling */
 .full-overlay {
     position: absolute; 
     top: 0; left: 0; 
@@ -66,7 +63,6 @@ canvas { display: block; image-rendering: pixelated; }
     -webkit-overflow-scrolling: touch;
 }
 
-/* Startscherm: content verticaal centreren */
 #start-screen {
     justify-content: center;
 }
@@ -94,7 +90,6 @@ canvas { display: block; image-rendering: pixelated; }
     background: rgba(0, 0, 0, 0.9);
 }
 
-/* iOS Specifieke Modal */
 #ios-modal {
     display: none; 
     position: fixed; 
@@ -167,7 +162,7 @@ canvas { display: block; image-rendering: pixelated; }
 #controls {
     position: absolute; bottom: 30px; width: 100%; display: flex;
     justify-content: space-between; align-items: flex-end; padding: 0 30px; box-sizing: border-box; z-index: 15; pointer-events: none;
-    touch-action: none; /* meerdere vingers tegelijk: joystick + knoppen */
+    touch-action: none;
 }
 
 #joystick-container {
@@ -180,7 +175,6 @@ canvas { display: block; image-rendering: pixelated; }
 #action-group { display: flex; flex-direction: column; align-items: flex-end; gap: 15px; pointer-events: none; }
 .weapon-cluster { display: flex; gap: 10px; pointer-events: auto; }
 
-/* SPRAY / BOM: schaal mee met viewport (klein op telefoon, max op groot scherm) */
 .special-btn {
     width: clamp(56px, 12vw, 90px);
     height: clamp(56px, 12vw, 90px);
@@ -192,7 +186,6 @@ canvas { display: block; image-rendering: pixelated; }
 .special-btn.active { background: #f0f; border-color: #fff; opacity: 1; pointer-events: auto; box-shadow: 0 4px 0 #606; }
 .timer-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.5); height: 0%; pointer-events: none; }
 
-/* SCHIJT-knop: schaal mee met viewport */
 .main-btn {
     width: clamp(80px, 16vw, 120px);
     height: clamp(80px, 16vw, 120px);
@@ -249,7 +242,7 @@ canvas { display: block; image-rendering: pixelated; }
 #settings-btn { background: #555; font-size: 16px; box-shadow: 4px 4px 0 #333; }
 #highscores-btn { background: #555; font-size: 16px; box-shadow: 4px 4px 0 #333; }
 
-#settings-modal {
+#settings-modal, #info-modal, #highscores-modal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center;
     justify-content: flex-start;
@@ -266,21 +259,6 @@ canvas { display: block; image-rendering: pixelated; }
 }
 .settings-row span { width: 44px; min-width: 44px; text-align: right; font-size: 14px; flex-shrink: 0; }
 
-#info-modal {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; 
-    justify-content: flex-start;
-    color: white; z-index: 200; padding: 40px 20px; box-sizing: border-box; text-align: center;
-    overflow-y: auto;
-}
-
-#highscores-modal {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center;
-    justify-content: flex-start;
-    color: white; z-index: 200; padding: 40px 20px; box-sizing: border-box; text-align: center;
-    overflow-y: auto;
-}
 #highscores-modal .modal-content h2 { color: var(--action-yellow); margin-bottom: 15px; }
 .highscore-eagle-image {
     width: 45vw;
@@ -337,88 +315,41 @@ canvas { display: block; image-rendering: pixelated; }
     border: 2px solid #ffcc00;
 }
 
-/* Instellingen: acties onder elkaar en even breed */
-#settings-modal .menu-btn {
-    width: 320px;
-    max-width: 100%;
-    display: block;
-}
-#settings-modal .paypal-btn {
-    width: 320px;
-}
+#settings-modal .menu-btn, #settings-modal .paypal-btn { width: 320px; max-width: 100%; display: block; }
 
-
-#level-loading-overlay {
-    justify-content: center;
-    z-index: 150;
-}
-.level-loading-title {
-    font-size: 22px;
-    margin-bottom: 20px;
-    color: white;
-    text-shadow: 2px 2px 0 #000;
-}
+#level-loading-overlay { justify-content: center; z-index: 150; }
+.level-loading-title { font-size: 22px; margin-bottom: 20px; color: white; text-shadow: 2px 2px 0 #000; }
 .level-loading-bar-container {
-    width: 280px;
-    max-width: 85vw;
-    height: 24px;
-    background: rgba(0,0,0,0.6);
-    border: 3px solid rgba(255,255,255,0.4);
-    border-radius: 12px;
-    overflow: hidden;
+    width: 280px; max-width: 85vw; height: 24px; background: rgba(0,0,0,0.6);
+    border: 3px solid rgba(255,255,255,0.4); border-radius: 12px; overflow: hidden;
 }
 .level-loading-bar {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(to right, #0a0, #0f0);
-    border-radius: 9px;
-    transition: width 0.15s ease-out;
+    height: 100%; width: 0%; background: linear-gradient(to right, #0a0, #0f0);
+    border-radius: 9px; transition: width 0.15s ease-out;
 }
 
 #boss-summary-container { 
-    display: flex; 
-    gap: 10px; 
-    margin: 10px 0; 
-    flex-wrap: wrap; 
-    justify-content: center;
-    width: 100%;
+    display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap; justify-content: center; width: 100%;
 }
         
 .boss-summary-img {
-    max-width: 80%;
-    max-height: 35dvh;
-    object-fit: contain;
-    border: 5px solid var(--action-yellow);
-    border-radius: 15px;
-    background: rgba(0, 0, 0, 0.4);
-    box-shadow: 0 0 30px rgba(255, 255, 0, 0.3);
+    max-width: 80%; max-height: 35dvh; object-fit: contain; border: 5px solid var(--action-yellow);
+    border-radius: 15px; background: rgba(0, 0, 0, 0.4); box-shadow: 0 0 30px rgba(255, 255, 0, 0.3);
     flex-shrink: 1;
 }
 
 #donation-box {
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    text-align: center;
-    width: 100%;
-    max-width: 400px;
+    margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; text-align: center;
+    width: 100%; max-width: 400px;
 }
 
-.high-score-line {
-    font-size: 20px;
-    color: var(--action-yellow);
-    margin: 10px 0 20px 0;
-}
+.high-score-line { font-size: 20px; color: var(--action-yellow); margin: 10px 0 20px 0; }
 #high-score-value { font-weight: bold; }
 
 .prominent-score {
-    font-size: clamp(40px, 12vh, 100px);
-    color: var(--action-yellow);
-    text-shadow: 4px 4px 0 #000;
-    margin: 5px 0;
-    font-weight: bold;
+    font-size: clamp(40px, 12vh, 100px); color: var(--action-yellow); text-shadow: 4px 4px 0 #000;
+    margin: 5px 0; font-weight: bold;
 }
         
 #loading-text { color: var(--action-yellow); font-size: 18px; margin-top: 10px; }
